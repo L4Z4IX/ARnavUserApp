@@ -1,6 +1,7 @@
 package com.google.ar.core.examples.java.helloar;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -28,7 +29,12 @@ public class MainActivity2 extends AppCompatActivity {
 
         // Get data from intent (if any)
         String receivedText = getIntent().getStringExtra("editTextInput");
-        textView.setText("You entered: " + receivedText);
+        textView.setText(receivedText);
+
+        showMotd(getIntent().getStringExtra("motdText"));
+
+
+
 
 
         // Click listener to go back
@@ -43,10 +49,19 @@ public class MainActivity2 extends AppCompatActivity {
         itemList = new ArrayList<>();
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, itemList);
         venueList.setAdapter(adapter);
+        //TODO venue list goes here
+
 
     }
     private void addItem(String item) {
         itemList.add(item);
         adapter.notifyDataSetChanged(); // Refresh ListView
+    }
+    private void showMotd(String motd){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Message of the day")
+                .setMessage(motd)
+                .setPositiveButton("Got it!", null)
+                .show();
     }
 }

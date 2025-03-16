@@ -1,5 +1,7 @@
 package com.google.ar.core.examples.java.common.httpConnection;
 
+import android.os.StrictMode;
+
 import java.io.IOException;
 
 import okhttp3.OkHttpClient;
@@ -9,7 +11,10 @@ import com.google.gson.Gson;
 
 public class HttpConnectionHandler {
     private final OkHttpClient client=new OkHttpClient();
-
+    public static final HttpConnectionHandler INSTANCE=new HttpConnectionHandler();
+    private  HttpConnectionHandler(){
+        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().permitAll().build());
+    }
     public Response newRequest(String url) throws IOException {
         return client.newCall(new Request.Builder().url(url).build()).execute();
     }
