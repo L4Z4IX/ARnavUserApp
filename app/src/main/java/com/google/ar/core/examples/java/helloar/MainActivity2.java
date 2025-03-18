@@ -8,10 +8,19 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.google.ar.core.examples.java.common.entityModel.Storage;
+import com.google.ar.core.examples.java.common.entityModel.Venue;
+import com.google.ar.core.examples.java.common.httpConnection.HttpConnectionHandler;
+
+import java.io.IOException;
 import java.util.ArrayList;
+
+import okhttp3.Response;
 
 
 public class MainActivity2 extends AppCompatActivity {
@@ -26,12 +35,14 @@ public class MainActivity2 extends AppCompatActivity {
         TextView textView = findViewById(R.id.textView);
         Button backButton = findViewById(R.id.backButton);
         venueList=findViewById(R.id.venueList);
+        SwipeRefreshLayout swipeRefreshLayout=findViewById(R.id.swipeRefreshLayout);
 
         // Get data from intent (if any)
         String receivedText = getIntent().getStringExtra("editTextInput");
         textView.setText(receivedText);
 
         showMotd(getIntent().getStringExtra("motdText"));
+        String url=getIntent().getStringExtra("url");
 
 
 
@@ -45,12 +56,11 @@ public class MainActivity2 extends AppCompatActivity {
                 finish();
             }
         });
+        swipeRefreshLayout.setOnRefreshListener(()->populateList(url,swipeRefreshLayout));
 
-        itemList = new ArrayList<>();
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, itemList);
-        venueList.setAdapter(adapter);
-        //TODO venue list goes here
 
+
+        populateList(url,swipeRefreshLayout);
 
     }
     private void addItem(String item) {
@@ -63,5 +73,22 @@ public class MainActivity2 extends AppCompatActivity {
                 .setMessage(motd)
                 .setPositiveButton("Got it!", null)
                 .show();
+    }
+    private void populateList(String url,SwipeRefreshLayout swipeRefreshLayout){
+        Storage.INSTANCE.clearInstance();
+        try {
+            Response r= HttpConnectionHandler.INSTANCE.newRequest("http://"+url+"/data/venues");
+            if(!r.isSuccessful()){
+                throw new IOException();
+            }
+            Storage.INSTANCE.setVenues(HttpConnectionHandler.INSTANCE.getResponseFromJson(r,Venue.LIST_TYPE_TOKEN));
+
+        } catch (IOException e) {
+            Toast.makeText(MainActivity2.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+        }
+        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, Storage.INSTANCE.getVenues().stream().map(x->x.getName()).toList());
+        venueList.setAdapter(adapter);
+        Toast.makeText(MainActivity2.this,"Refreshed",Toast.LENGTH_SHORT).show();
+        swipeRefreshLayout.setRefreshing(false);
     }
 }

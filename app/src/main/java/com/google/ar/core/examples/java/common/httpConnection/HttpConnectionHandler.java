@@ -8,6 +8,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 public class HttpConnectionHandler {
     private final OkHttpClient client=new OkHttpClient();
@@ -21,7 +22,7 @@ public class HttpConnectionHandler {
     public String getResponseString(Response response) throws IOException {
         return response.isSuccessful()?response.body().string():null;
     }
-    public <T> T getResponseFromJson(Response response, Class<T> clazz) throws IOException {
-        return new Gson().fromJson(response.body().string(), clazz);
+    public <T> T getResponseFromJson(Response response, TypeToken<T> type) throws IOException {
+        return new Gson().fromJson(response.body().string(), type);
     }
 }

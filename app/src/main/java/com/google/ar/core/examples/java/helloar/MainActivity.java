@@ -70,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(MainActivity.this, MainActivity2.class);
                 intent.putExtra("editTextInput",data[0].trim());
                 intent.putExtra("motdText",data[2].trim());
+                intent.putExtra("url",inputText);
                 startActivity(intent);
             } else {
                 Toast.makeText(MainActivity.this, "Please enter an address", Toast.LENGTH_SHORT).show();
