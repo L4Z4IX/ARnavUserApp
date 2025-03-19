@@ -10,6 +10,8 @@ public class Level {
 
     private ArrayList<Point> pointSet;
 
+
+
     public Level(Integer id, String name, ArrayList<Point> pointSet){
         this.id=id;
         this.name=name;
@@ -27,4 +29,5 @@ public class Level {
     public ArrayList<Point> getPointSet() {
         return pointSet;
     }
+
 }

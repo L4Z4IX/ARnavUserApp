@@ -6,7 +6,6 @@ import java.util.List;
 public class Storage {
     private List<Venue> venues=new ArrayList<>();
     private List<Level> levels=new ArrayList<>();
-    private List<Point> points=new ArrayList<>();
     private List<Connection> connections=new ArrayList<>();
 
     public static final Storage INSTANCE=new Storage();
@@ -22,9 +21,7 @@ public class Storage {
         this.levels = levels;
     }
 
-    public void setPoints(List<Point> points) {
-        this.points = points;
-    }
+
 
     public void setConnections(List<Connection> connections) {
         this.connections = connections;
@@ -38,9 +35,7 @@ public class Storage {
         return levels;
     }
 
-    public List<Point> getPoints() {
-        return points;
-    }
+
 
     public List<Connection> getConnections() {
         return connections;
@@ -48,7 +43,6 @@ public class Storage {
     public void clearInstance(){
         venues.clear();
         levels.clear();
-        points.clear();
         connections.clear();
     }
 }
