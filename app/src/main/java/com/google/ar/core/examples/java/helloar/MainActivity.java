@@ -8,11 +8,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.ar.core.examples.java.common.httpConnection.HttpConnectionHandler;
-
-import java.io.IOException;
 
 import okhttp3.Response;
 
@@ -46,31 +45,31 @@ public class MainActivity extends AppCompatActivity {
             if (!inputText.isEmpty()) {
                 Response resp = null;
                 try {
-                    resp= HttpConnectionHandler.INSTANCE.newRequest("http://"+inputText+"/hello");
+                    resp = HttpConnectionHandler.INSTANCE.newRequest("http://" + inputText + "/hello");
                 } catch (Exception e) {
                     e.printStackTrace();
-                    Toast.makeText(MainActivity.this, "Invalid address",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Invalid address", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                if(resp==null||!resp.isSuccessful()){
-                    Toast.makeText(MainActivity.this, "Invalid response from server",Toast.LENGTH_SHORT).show();
+                if (resp == null || !resp.isSuccessful()) {
+                    Toast.makeText(MainActivity.this, "Invalid response from server", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 String[] data;
                 try {
-                    data=HttpConnectionHandler.INSTANCE.getResponseString(resp).split(";");
-                    if(data.length!=3){
-                        Toast.makeText(MainActivity.this, "Address does not use correct configuration",Toast.LENGTH_LONG).show();
+                    data = HttpConnectionHandler.INSTANCE.getResponseString(resp).split(";");
+                    if (data.length != 3) {
+                        Toast.makeText(MainActivity.this, "Address does not use correct configuration", Toast.LENGTH_LONG).show();
                     }
                 } catch (Exception e) {
                     return;
                 }
                 // Navigate to SecondActivity
                 Intent intent = new Intent(MainActivity.this, MainActivity2.class);
-                intent.putExtra("editTextInput",data[0].trim());
-                intent.putExtra("motdText",data[2].trim());
-                intent.putExtra("url",inputText);
+                intent.putExtra("editTextInput", data[0].trim());
+                intent.putExtra("motdText", data[2].trim());
+                intent.putExtra("url", inputText);
                 startActivity(intent);
             } else {
                 Toast.makeText(MainActivity.this, "Please enter an address", Toast.LENGTH_SHORT).show();
