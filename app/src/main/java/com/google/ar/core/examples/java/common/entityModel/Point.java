@@ -1,9 +1,11 @@
 package com.google.ar.core.examples.java.common.entityModel;
 
 public class Point {
-    private Integer id;
-    private String name;
-    private double x, y, z;
+    private final Integer id;
+    private final String name;
+    private final double x;
+    private final double y;
+    private final double z;
 
     public Point(Integer id, String name, double x, double y, double z) {
         this.id = id;
@@ -32,17 +34,24 @@ public class Point {
     public double getZ() {
         return z;
     }
+
     @Override
-    public boolean equals(Object o){
-        if(this==o)
+    public boolean equals(Object o) {
+        if (this == o)
             return true;
-        if(o==null||this.getClass()!=o.getClass())
+        if (o == null || this.getClass() != o.getClass())
             return false;
 
-        return ((Point)(o)).id.equals(this.id);
+        return ((Point) (o)).id.equals(this.id);
     }
+
     @Override
-    public int hashCode(){
+    public int hashCode() {
         return id;
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

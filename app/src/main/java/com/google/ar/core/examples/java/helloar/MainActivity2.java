@@ -1,8 +1,8 @@
 package com.google.ar.core.examples.java.helloar;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -17,15 +17,14 @@ import com.google.ar.core.examples.java.common.entityModel.Venue;
 import com.google.ar.core.examples.java.common.httpConnection.HttpConnectionHandler;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 import okhttp3.Response;
 
 
 public class MainActivity2 extends AppCompatActivity {
+    String url = "";
     private ListView venueList;
-    private ArrayList<String> itemList;
-    private ArrayAdapter<String> adapter;
+    private ArrayAdapter<Venue> adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,21 +36,15 @@ public class MainActivity2 extends AppCompatActivity {
         venueList = findViewById(R.id.venueList);
         SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
 
-        // Get data from intent (if any)
         String receivedText = getIntent().getStringExtra("editTextInput");
         textView.setText(receivedText);
 
         showMotd(getIntent().getStringExtra("motdText"));
-        String url = getIntent().getStringExtra("url");
+        url = getIntent().getStringExtra("url");
 
 
-        // Click listener to go back
-        backButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Finish this activity and go back
-                finish();
-            }
+        backButton.setOnClickListener(v -> {
+            finish();
         });
         swipeRefreshLayout.setOnRefreshListener(() -> populateList(url, swipeRefreshLayout));
 
@@ -60,10 +53,6 @@ public class MainActivity2 extends AppCompatActivity {
 
     }
 
-    private void addItem(String item) {
-        itemList.add(item);
-        adapter.notifyDataSetChanged(); // Refresh ListView
-    }
 
     private void showMotd(String motd) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -85,9 +74,19 @@ public class MainActivity2 extends AppCompatActivity {
         } catch (IOException e) {
             Toast.makeText(MainActivity2.this, "Something went wrong", Toast.LENGTH_SHORT).show();
         }
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, Storage.INSTANCE.getVenues().stream().map(x -> x.getName()).toList());
+        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, Storage.INSTANCE.getVenues());
         venueList.setAdapter(adapter);
-        Toast.makeText(MainActivity2.this, "Refreshed", Toast.LENGTH_SHORT).show();
+        venueList.setOnItemClickListener((adapter, v, position, id) -> {
+            itemSelected(position);
+        });
+        Toast.makeText(MainActivity2.this, "Venues loaded", Toast.LENGTH_SHORT).show();
         swipeRefreshLayout.setRefreshing(false);
+    }
+
+    private void itemSelected(int position) {
+        Intent intent = new Intent(MainActivity2.this, MainActivity3.class);
+        intent.putExtra("url", url);
+        intent.putExtra("venueIndex", position + "");
+        startActivity(intent);
     }
 }
