@@ -1,5 +1,6 @@
 package com.google.ar.core.examples.java.helloar;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -72,5 +73,7 @@ public class MainActivity3 extends AppCompatActivity {
 
     private void itemSelected(AdapterView<ArrayAdapter<Point>> adapter, int position) {
         Toast.makeText(MainActivity3.this, "You clicked on " + ((Point) adapter.getItemAtPosition(position)).getName(), Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(MainActivity3.this, MainActivity4.class);
+        startActivity(intent);
     }
 }

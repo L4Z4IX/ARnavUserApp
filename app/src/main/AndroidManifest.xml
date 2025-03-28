@@ -33,6 +33,10 @@
         android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
+            android:name=".MainActivity4"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity
             android:name=".MainActivity3"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
