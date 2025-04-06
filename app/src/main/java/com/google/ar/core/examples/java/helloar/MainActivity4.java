@@ -1,5 +1,6 @@
 package com.google.ar.core.examples.java.helloar;
 
+import android.annotation.SuppressLint;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,6 +14,8 @@ import com.google.ar.core.Frame;
 import com.google.ar.core.Session;
 import com.google.ar.core.examples.java.common.helpers.CameraPermissionHelper;
 import com.google.ar.core.examples.java.common.helpers.DisplayRotationHelper;
+import com.google.ar.core.examples.java.common.helpers.LocationHelper;
+import com.google.ar.core.examples.java.common.helpers.LocationPermissionHelper;
 import com.google.ar.core.examples.java.common.samplerender.Framebuffer;
 import com.google.ar.core.examples.java.common.samplerender.SampleRender;
 import com.google.ar.core.examples.java.common.samplerender.arcore.BackgroundRenderer;
@@ -33,12 +36,15 @@ public class MainActivity4 extends AppCompatActivity implements SampleRender.Ren
     private boolean hasSetTextureNames = false;
     private DisplayRotationHelper displayRotationHelper;
     private Framebuffer virtualSceneFramebuffer;
+    private LocationHelper locationHelper;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main4);
+        locationHelper = new LocationHelper(this);
+
 
         surfaceView = findViewById(R.id.surfaceview);
         displayRotationHelper = new DisplayRotationHelper(MainActivity4.this);
@@ -95,13 +101,9 @@ public class MainActivity4 extends AppCompatActivity implements SampleRender.Ren
         }
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public void onResume() {
-
-        if (!CameraPermissionHelper.hasCameraPermission(this)) {
-            CameraPermissionHelper.requestCameraPermission(this);
-            return;
-        }
 
         super.onResume();
         surfaceView.setVisibility(GLSurfaceView.VISIBLE);
@@ -116,10 +118,18 @@ public class MainActivity4 extends AppCompatActivity implements SampleRender.Ren
                     CameraPermissionHelper.requestCameraPermission(this);
                     return;
                 }
+                if (!LocationPermissionHelper.hasFineLocationPermission(this)) {
+                    LocationPermissionHelper.requestFineLocationPermission(this);
+                    return;
+                }
 
 
                 session = new Session(this);
                 configureSession();
+                //TODO Set up gps tracking and what to do with data HERE
+                locationHelper.AddCallBack(x -> {
+                    System.out.println(x.toString());
+                });
                 session.resume();
             } catch (UnavailableArcoreNotInstalledException
                     e) {
