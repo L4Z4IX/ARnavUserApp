@@ -5,10 +5,10 @@
     android:layout_height="match_parent"
     tools:context="com.google.ar.core.examples.java.helloar.MainActivity4">
 
-    <android.opengl.GLSurfaceView
-        android:id="@+id/surfaceview"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_gravity="top" />
+    <androidx.fragment.app.FragmentContainerView
+        android:name="com.google.ar.sceneform.ux.ArFragment"
+        android:id="@+id/arfragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 </RelativeLayout>

@@ -1,42 +1,33 @@
 package com.google.ar.core.examples.java.helloar;
 
 import android.annotation.SuppressLint;
-import android.opengl.GLSurfaceView;
+import android.location.Location;
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.ar.core.Anchor;
 import com.google.ar.core.ArCoreApk;
 import com.google.ar.core.Camera;
 import com.google.ar.core.Config;
 import com.google.ar.core.Frame;
-import com.google.ar.core.Session;
+import com.google.ar.core.Pose;
 import com.google.ar.core.examples.java.common.helpers.CameraPermissionHelper;
-import com.google.ar.core.examples.java.common.helpers.DisplayRotationHelper;
 import com.google.ar.core.examples.java.common.helpers.LocationHelper;
 import com.google.ar.core.examples.java.common.helpers.LocationPermissionHelper;
-import com.google.ar.core.examples.java.common.samplerender.Framebuffer;
-import com.google.ar.core.examples.java.common.samplerender.SampleRender;
-import com.google.ar.core.examples.java.common.samplerender.arcore.BackgroundRenderer;
-import com.google.ar.core.exceptions.CameraNotAvailableException;
-import com.google.ar.core.exceptions.UnavailableApkTooOldException;
-import com.google.ar.core.exceptions.UnavailableArcoreNotInstalledException;
-import com.google.ar.core.exceptions.UnavailableDeviceNotCompatibleException;
-import com.google.ar.core.exceptions.UnavailableSdkTooOldException;
+import com.google.ar.sceneform.AnchorNode;
+import com.google.ar.sceneform.rendering.ModelRenderable;
+import com.google.ar.sceneform.ux.ArFragment;
+import com.google.ar.sceneform.ux.TransformableNode;
 
-import java.io.IOException;
+public class MainActivity4 extends AppCompatActivity {
 
-public class MainActivity4 extends AppCompatActivity implements SampleRender.Renderer {
+    ArFragment arFragment;
+    AnchorNode currentAnchorNode;
 
-    private Session session;
-    private GLSurfaceView surfaceView;
-    private SampleRender render;
-    private BackgroundRenderer backgroundRenderer;
-    private boolean hasSetTextureNames = false;
-    private DisplayRotationHelper displayRotationHelper;
-    private Framebuffer virtualSceneFramebuffer;
     private LocationHelper locationHelper;
+    private volatile Location currentLocation;
+    private final Location testLocation = new Location("manual");
 
 
     @Override
@@ -44,60 +35,55 @@ public class MainActivity4 extends AppCompatActivity implements SampleRender.Ren
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main4);
         locationHelper = new LocationHelper(this);
+        testLocation.setAltitude(256.8999938964844);
+        testLocation.setLatitude(46.0777558);
+        testLocation.setLongitude(18.2862263);
 
 
-        surfaceView = findViewById(R.id.surfaceview);
-        displayRotationHelper = new DisplayRotationHelper(MainActivity4.this);
-        render = new SampleRender(surfaceView, this, getAssets());
+        arFragment = (ArFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.arfragment);
+
+        //System.out.println(currentLocation.getAltitude() + " " + currentLocation.getLatitude() + " " + currentLocation.getLongitude());
+
+        //Pose targetPose = cameraPose.compose(Pose.makeTranslation(0, 0, -2.0f));
+
 
     }
 
-    @Override
-    public void onSurfaceCreated(SampleRender render) {
-        backgroundRenderer = new BackgroundRenderer(render);
-        virtualSceneFramebuffer = new Framebuffer(render, 1, 1);
-    }
-
-    @Override
-    public void onSurfaceChanged(SampleRender render, int width, int height) {
-        displayRotationHelper.onSurfaceChanged(width, height);
-        virtualSceneFramebuffer.resize(width, height);
-    }
-
-    @Override
-    public void onDrawFrame(SampleRender render) {
-        if (session == null) {
-            return;
-        }
-
-        if (!hasSetTextureNames) {
-            session.setCameraTextureNames(
-                    new int[]{backgroundRenderer.getCameraColorTexture().getTextureId()});
-            hasSetTextureNames = true;
-        }
-        displayRotationHelper.updateSessionIfNeeded(session);
-        Frame frame;
-        try {
-            frame = session.update();
-        } catch (CameraNotAvailableException e) {
-            Log.e(this.getClass().getSimpleName(), "Camera not available during onDrawFrame", e);
-            return;
-        }
+    private void placeModel() {
+        Frame frame = arFragment.getArSceneView().getArFrame();
         Camera camera = frame.getCamera();
+        double distance = currentLocation.distanceTo(testLocation);
+        double bearing = currentLocation.bearingTo(testLocation);
+
+        float dx = (float) (distance * Math.sin(Math.toRadians(bearing)));
+        float dy = (float) (currentLocation.getAltitude() - testLocation.getAltitude());
+        float dz = (float) (-distance * Math.cos(Math.toRadians(bearing)));
         try {
-            backgroundRenderer.setUseDepthVisualization(
-                    render, false);
-            backgroundRenderer.setUseOcclusion(render, false);
-        } catch (IOException e) {
-            Log.e(this.getClass().getSimpleName(), "Failed to read a required asset file", e);
-            return;
-        }
+            Pose cameraPose = camera.getPose();
+            Pose targetPose = cameraPose.compose(Pose.makeTranslation(dx, dy, dz));
+            System.out.println(dx + " " + dy + " " + dz);
 
+            Anchor anchor = arFragment.getArSceneView().getSession().createAnchor(targetPose);
+            if (currentAnchorNode != null) {
+                currentAnchorNode.getAnchor().detach();
+            }
+            ModelRenderable.builder()
+                    .setSource(this, R.raw.pawn).build()
+                    .thenAccept(renderable -> {
+                        currentAnchorNode = new AnchorNode(anchor);
+                        currentAnchorNode.setParent(arFragment.getArSceneView().getScene());
 
-        backgroundRenderer.updateDisplayGeometry(frame);
-
-        if (frame.getTimestamp() != 0) {
-            backgroundRenderer.drawBackground(render);
+                        TransformableNode transformableNode = new TransformableNode(arFragment.getTransformationSystem());
+                        transformableNode.setRenderable(renderable);
+                        transformableNode.setParent(currentAnchorNode);
+                    })
+                    .exceptionally(throwable -> {
+                        System.err.print("AR Model load error: " + throwable.getMessage());
+                        return null;
+                    });
+            locationHelper.stop();
+        } catch (Exception ignored) {
         }
     }
 
@@ -105,83 +91,45 @@ public class MainActivity4 extends AppCompatActivity implements SampleRender.Ren
     @Override
     public void onResume() {
 
+
+        ArCoreApk.Availability availability = ArCoreApk.getInstance().checkAvailability(this);
+
+        if (!CameraPermissionHelper.hasCameraPermission(this)) {
+            CameraPermissionHelper.requestCameraPermission(this);
+            return;
+        }
+        if (!LocationPermissionHelper.hasFineLocationPermission(this)) {
+            LocationPermissionHelper.requestFineLocationPermission(this);
+            return;
+        }
+
+
+        //TODO Set up gps tracking and what to do with data HERE
+        locationHelper.AddCallBack(x -> {
+            currentLocation = x;
+            System.out.println("alt: " + currentLocation.getAltitude() + " lat:" + currentLocation.getLatitude() + " long:" + currentLocation.getLongitude());
+            placeModel();
+        });
+        arFragment.onResume();
+        Config conf = arFragment.getArSceneView().getSession().getConfig();
+        //conf.setFocusMode(Config.FocusMode.AUTO);
+        conf.setDepthMode(Config.DepthMode.AUTOMATIC);
+        conf.setInstantPlacementMode(Config.InstantPlacementMode.LOCAL_Y_UP);
+        arFragment.getArSceneView().getSession().configure(conf);
         super.onResume();
-        surfaceView.setVisibility(GLSurfaceView.VISIBLE);
-        surfaceView.onResume();
-        if (session == null) {
-            Exception exception = null;
-            String message = null;
-            try {
-                ArCoreApk.Availability availability = ArCoreApk.getInstance().checkAvailability(this);
-
-                if (!CameraPermissionHelper.hasCameraPermission(this)) {
-                    CameraPermissionHelper.requestCameraPermission(this);
-                    return;
-                }
-                if (!LocationPermissionHelper.hasFineLocationPermission(this)) {
-                    LocationPermissionHelper.requestFineLocationPermission(this);
-                    return;
-                }
-
-
-                session = new Session(this);
-                configureSession();
-                //TODO Set up gps tracking and what to do with data HERE
-                locationHelper.AddCallBack(x -> {
-                    System.out.println(x.toString());
-                });
-                session.resume();
-            } catch (UnavailableArcoreNotInstalledException
-                    e) {
-                message = "Please install ARCore";
-                exception = e;
-            } catch (UnavailableApkTooOldException e) {
-                message = "Please update ARCore";
-                exception = e;
-            } catch (UnavailableSdkTooOldException e) {
-                message = "Please update this app";
-                exception = e;
-            } catch (UnavailableDeviceNotCompatibleException e) {
-                message = "This device does not support AR";
-                exception = e;
-            } catch (Exception e) {
-                message = "Failed to create AR session";
-                exception = e;
-            }
-        }
-
-
     }
 
-    private void configureSession() {
-        Config config = session.getConfig();
-        config.setLightEstimationMode(Config.LightEstimationMode.ENVIRONMENTAL_HDR);
-        if (session.isDepthModeSupported(Config.DepthMode.AUTOMATIC)) {
-            config.setDepthMode(Config.DepthMode.AUTOMATIC);
-        } else {
-            config.setDepthMode(Config.DepthMode.DISABLED);
-        }
-        config.setInstantPlacementMode(Config.InstantPlacementMode.DISABLED);
-        config.setFocusMode(Config.FocusMode.AUTO);
-        session.configure(config);
-    }
 
     @Override
     protected void onDestroy() {
-        if (session != null) {
-            session.close();
-            session = null;
-        }
+        arFragment.onDestroy();
+        locationHelper.stop();
         super.onDestroy();
     }
 
+    @Override
     public void onPause() {
+        arFragment.onPause();
         super.onPause();
-        if (session != null) {
-            surfaceView.onPause();
-            session.pause();
-        }
     }
-
-
 }
