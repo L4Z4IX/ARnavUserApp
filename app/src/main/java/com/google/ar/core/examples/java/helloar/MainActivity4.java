@@ -8,14 +8,14 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.ar.core.Anchor;
 import com.google.ar.core.ArCoreApk;
-import com.google.ar.core.Camera;
 import com.google.ar.core.Config;
-import com.google.ar.core.Frame;
 import com.google.ar.core.Pose;
 import com.google.ar.core.examples.java.common.helpers.CameraPermissionHelper;
 import com.google.ar.core.examples.java.common.helpers.LocationHelper;
 import com.google.ar.core.examples.java.common.helpers.LocationPermissionHelper;
 import com.google.ar.sceneform.AnchorNode;
+import com.google.ar.sceneform.math.Vector3;
+import com.google.ar.sceneform.rendering.Material;
 import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.ux.ArFragment;
 import com.google.ar.sceneform.ux.TransformableNode;
@@ -28,6 +28,7 @@ public class MainActivity4 extends AppCompatActivity {
     private LocationHelper locationHelper;
     private volatile Location currentLocation;
     private final Location testLocation = new Location("manual");
+    private ModelRenderable renderable;
 
 
     @Override
@@ -36,12 +37,15 @@ public class MainActivity4 extends AppCompatActivity {
         setContentView(R.layout.activity_main4);
         locationHelper = new LocationHelper(this);
         testLocation.setAltitude(256.8999938964844);
-        testLocation.setLatitude(46.0777558);
-        testLocation.setLongitude(18.2862263);
+        testLocation.setLatitude(46.077715160000004);
+        testLocation.setLongitude(18.28626764);
+        ModelRenderable.builder()
+                .setSource(this, R.raw.pawn).build().thenAccept(r -> renderable = r);
 
 
         arFragment = (ArFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.arfragment);
+
 
         //System.out.println(currentLocation.getAltitude() + " " + currentLocation.getLatitude() + " " + currentLocation.getLongitude());
 
@@ -51,8 +55,6 @@ public class MainActivity4 extends AppCompatActivity {
     }
 
     private void placeModel() {
-        Frame frame = arFragment.getArSceneView().getArFrame();
-        Camera camera = frame.getCamera();
         double distance = currentLocation.distanceTo(testLocation);
         double bearing = currentLocation.bearingTo(testLocation);
 
@@ -60,29 +62,46 @@ public class MainActivity4 extends AppCompatActivity {
         float dy = (float) (currentLocation.getAltitude() - testLocation.getAltitude());
         float dz = (float) (-distance * Math.cos(Math.toRadians(bearing)));
         try {
-            Pose cameraPose = camera.getPose();
-            Pose targetPose = cameraPose.compose(Pose.makeTranslation(dx, dy, dz));
+            Pose targetPose = Pose.makeTranslation(dx, dy, dz);
+
             System.out.println(dx + " " + dy + " " + dz);
 
             Anchor anchor = arFragment.getArSceneView().getSession().createAnchor(targetPose);
             if (currentAnchorNode != null) {
                 currentAnchorNode.getAnchor().detach();
             }
-            ModelRenderable.builder()
-                    .setSource(this, R.raw.pawn).build()
-                    .thenAccept(renderable -> {
-                        currentAnchorNode = new AnchorNode(anchor);
-                        currentAnchorNode.setParent(arFragment.getArSceneView().getScene());
+            for (int i = 0; i < renderable.getSubmeshCount(); i++) {
+                Material originalMaterial = renderable.getMaterial(i);
+                // Create a mutable copy to avoid modifying the original shared material
+                Material debugMaterial = originalMaterial.makeCopy();
 
-                        TransformableNode transformableNode = new TransformableNode(arFragment.getTransformationSystem());
-                        transformableNode.setRenderable(renderable);
-                        transformableNode.setParent(currentAnchorNode);
-                    })
-                    .exceptionally(throwable -> {
-                        System.err.print("AR Model load error: " + throwable.getMessage());
-                        return null;
-                    });
-            locationHelper.stop();
+                // Disable depth testing (reading)
+                debugMaterial.setBoolean("depthRead", false); // Filament name
+                // Or potentially: debugMaterial.setBoolean("depthTest", false); // Older/alternative name
+
+                // Disable depth writing
+                debugMaterial.setBoolean("depthWrite", false);
+
+                // Optional: Set a high rendering priority (e.g., 100+)
+                // The exact parameter name might vary based on Sceneform/Filament version.
+                // Check Filament documentation for material parameters like 'priority' or 'renderingOrder'.
+                // Example (syntax might differ):
+                // debugMaterial.setInt("priority", 100);
+
+                // Apply the modified material back to the renderable's submesh
+                renderable.setMaterial(i, debugMaterial);
+            }
+            currentAnchorNode = new AnchorNode(anchor);
+            currentAnchorNode.setParent(arFragment.getArSceneView().getScene());
+
+            TransformableNode transformableNode = new TransformableNode(arFragment.getTransformationSystem());
+            transformableNode.setRenderable(renderable);
+            transformableNode.setParent(currentAnchorNode);
+            transformableNode.setLocalScale(new Vector3(5.0f, 5.0f, 5.0f));
+            System.out.println("Placed object");
+            if (currentLocation.getAccuracy() < 2.6f)
+                locationHelper.stop();
+
         } catch (Exception ignored) {
         }
     }
@@ -107,13 +126,14 @@ public class MainActivity4 extends AppCompatActivity {
         //TODO Set up gps tracking and what to do with data HERE
         locationHelper.AddCallBack(x -> {
             currentLocation = x;
-            System.out.println("alt: " + currentLocation.getAltitude() + " lat:" + currentLocation.getLatitude() + " long:" + currentLocation.getLongitude());
             placeModel();
+
+            System.out.println("ACC: " + currentLocation.getAccuracy() + "alt: " + currentLocation.getAltitude() + " lat:" + currentLocation.getLatitude() + " long:" + currentLocation.getLongitude());
         });
         arFragment.onResume();
         Config conf = arFragment.getArSceneView().getSession().getConfig();
-        //conf.setFocusMode(Config.FocusMode.AUTO);
-        conf.setDepthMode(Config.DepthMode.AUTOMATIC);
+        conf.setFocusMode(Config.FocusMode.AUTO);
+        conf.setDepthMode(Config.DepthMode.DISABLED);
         conf.setInstantPlacementMode(Config.InstantPlacementMode.LOCAL_Y_UP);
         arFragment.getArSceneView().getSession().configure(conf);
         super.onResume();
