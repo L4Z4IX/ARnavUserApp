@@ -62,7 +62,7 @@ public class Dijkstra {
             pointsInOrder.add(at);
         }
 
-        return pointsInOrder.isEmpty() || !pointsInOrder.get(idToPoint.size() - 1).equals(start) ? new ArrayList<>() : pointsInOrder;
+        return pointsInOrder.isEmpty() || !pointsInOrder.get(pointsInOrder.size() - 1).equals(start) ? new ArrayList<>() : pointsInOrder;
     }
 
 }
