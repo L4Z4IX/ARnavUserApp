@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.ar.core.examples.java.common.entityModel.Connection;
 import com.google.ar.core.examples.java.common.entityModel.Level;
 import com.google.ar.core.examples.java.common.entityModel.Point;
 import com.google.ar.core.examples.java.common.entityModel.Storage;
@@ -23,10 +24,11 @@ import java.io.IOException;
 import okhttp3.Response;
 
 public class MainActivity3 extends AppCompatActivity {
-    ArrayAdapter<Point> adapter;
-    ListView pointList;
-    Button backButton;
-    SwipeRefreshLayout swipeRefreshLayout;
+    private ArrayAdapter<Point> adapter;
+    private ListView pointList;
+    private Button backButton;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private String venueId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,12 +45,12 @@ public class MainActivity3 extends AppCompatActivity {
             finish();
         });
         String url = getIntent().getStringExtra("url");
-        String venueIndex = getIntent().getStringExtra("venueIndex");
-        ((TextView) findViewById(R.id.textView3)).setText(Storage.INSTANCE.getVenues().get(Integer.parseInt(venueIndex)).getName());
-        swipeRefreshLayout.setOnRefreshListener(() -> populateList(url, venueIndex, swipeRefreshLayout));
+        venueId = getIntent().getStringExtra("venueId");
+        ((TextView) findViewById(R.id.textView3)).setText(Storage.INSTANCE.getVenues().get(Integer.parseInt(venueId)).getName());
+        swipeRefreshLayout.setOnRefreshListener(() -> populateList(url, venueId, swipeRefreshLayout));
 
 
-        populateList(url, venueIndex, swipeRefreshLayout);
+        populateList(url, venueId, swipeRefreshLayout);
     }
 
     private void populateList(String url, String venueIndex, SwipeRefreshLayout swipeRefreshLayout) {
@@ -58,6 +60,12 @@ public class MainActivity3 extends AppCompatActivity {
                 throw new IOException();
             }
             Storage.INSTANCE.setLevels(HttpConnectionHandler.INSTANCE.getResponseFromJson(r, Level.LIST_TYPE_TOKEN));
+            Response r2 = HttpConnectionHandler.INSTANCE.newRequest("http://" + url + "/data/connectionsByVenue?venueId=" + Storage.INSTANCE.getVenues().get(Integer.parseInt(venueIndex)).getId());
+            if (!r2.isSuccessful()) {
+                throw new IOException();
+            }
+            Storage.INSTANCE.setConnections(HttpConnectionHandler.INSTANCE.getResponseFromJson(r2, Connection.LIST_TYPE_TOKEN));
+
             adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,
                     Storage.INSTANCE.getLevels().stream()
                             .flatMap(x -> x.getPointSet().stream()).toList());
@@ -66,6 +74,8 @@ public class MainActivity3 extends AppCompatActivity {
             Toast.makeText(MainActivity3.this, "Points loaded", Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
             Toast.makeText(MainActivity3.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+            System.err.println("Error on points load:");
+            e.printStackTrace();
         }
         swipeRefreshLayout.setRefreshing(false);
 
@@ -74,6 +84,8 @@ public class MainActivity3 extends AppCompatActivity {
     private void itemSelected(AdapterView<ArrayAdapter<Point>> adapter, int position) {
         Toast.makeText(MainActivity3.this, "You clicked on " + ((Point) adapter.getItemAtPosition(position)).getName(), Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(MainActivity3.this, MainActivity4.class);
+        intent.putExtra("pointId", ((Point) adapter.getItemAtPosition(position)).getId() + "");
+        intent.putExtra("venueId", venueId);
         startActivity(intent);
     }
 }

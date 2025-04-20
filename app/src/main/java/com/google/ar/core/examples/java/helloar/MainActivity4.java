@@ -10,9 +10,11 @@ import com.google.ar.core.Anchor;
 import com.google.ar.core.ArCoreApk;
 import com.google.ar.core.Config;
 import com.google.ar.core.Pose;
+import com.google.ar.core.examples.java.common.entityModel.Storage;
 import com.google.ar.core.examples.java.common.helpers.CameraPermissionHelper;
 import com.google.ar.core.examples.java.common.helpers.LocationHelper;
 import com.google.ar.core.examples.java.common.helpers.LocationPermissionHelper;
+import com.google.ar.core.examples.java.common.navigation.PointManager;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.Material;
@@ -29,6 +31,7 @@ public class MainActivity4 extends AppCompatActivity {
     private volatile Location currentLocation;
     private final Location testLocation = new Location("manual");
     private ModelRenderable renderable;
+    private int pointId;
 
 
     @Override
@@ -45,7 +48,7 @@ public class MainActivity4 extends AppCompatActivity {
 
         arFragment = (ArFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.arfragment);
-
+        pointId = Integer.parseInt(getIntent().getStringExtra("pointId"));
 
         //System.out.println(currentLocation.getAltitude() + " " + currentLocation.getLatitude() + " " + currentLocation.getLongitude());
 
@@ -136,6 +139,8 @@ public class MainActivity4 extends AppCompatActivity {
         conf.setDepthMode(Config.DepthMode.DISABLED);
         conf.setInstantPlacementMode(Config.InstantPlacementMode.LOCAL_Y_UP);
         arFragment.getArSceneView().getSession().configure(conf);
+        PointManager pointManager = new PointManager(Storage.INSTANCE.getLevels().stream().flatMap(x -> x.getPointSet().stream()).filter(x -> x.getId() == pointId).findFirst().get());
+        pointManager.pointManagerCallback(new Location("ASD"));
         super.onResume();
     }
 

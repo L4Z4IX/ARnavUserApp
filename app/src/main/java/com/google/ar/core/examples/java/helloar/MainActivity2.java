@@ -86,7 +86,7 @@ public class MainActivity2 extends AppCompatActivity {
     private void itemSelected(int position) {
         Intent intent = new Intent(MainActivity2.this, MainActivity3.class);
         intent.putExtra("url", url);
-        intent.putExtra("venueIndex", position + "");
+        intent.putExtra("venueId", position + "");
         startActivity(intent);
     }
 }
