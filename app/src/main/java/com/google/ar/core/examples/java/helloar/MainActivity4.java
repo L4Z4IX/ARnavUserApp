@@ -12,8 +12,8 @@ import com.google.ar.core.Config;
 import com.google.ar.core.Pose;
 import com.google.ar.core.examples.java.common.entityModel.Storage;
 import com.google.ar.core.examples.java.common.helpers.CameraPermissionHelper;
-import com.google.ar.core.examples.java.common.helpers.LocationHelper;
 import com.google.ar.core.examples.java.common.helpers.LocationPermissionHelper;
+import com.google.ar.core.examples.java.common.navigation.LocationTracker;
 import com.google.ar.core.examples.java.common.navigation.PointManager;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.math.Vector3;
@@ -22,26 +22,29 @@ import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.ux.ArFragment;
 import com.google.ar.sceneform.ux.TransformableNode;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class MainActivity4 extends AppCompatActivity {
 
     ArFragment arFragment;
     AnchorNode currentAnchorNode;
 
-    private LocationHelper locationHelper;
     private volatile Location currentLocation;
     private final Location testLocation = new Location("manual");
     private ModelRenderable renderable;
     private int pointId;
+    private Timer placementTimer;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main4);
-        locationHelper = new LocationHelper(this);
         testLocation.setAltitude(256.8999938964844);
-        testLocation.setLatitude(46.077715160000004);
-        testLocation.setLongitude(18.28626764);
+        testLocation.setLatitude(46.07772804106784);
+        testLocation.setLongitude(18.286214778052006);
+
         ModelRenderable.builder()
                 .setSource(this, R.raw.pawn).build().thenAccept(r -> renderable = r);
 
@@ -66,7 +69,7 @@ public class MainActivity4 extends AppCompatActivity {
         float dz = (float) (-distance * Math.cos(Math.toRadians(bearing)));
         try {
             Pose targetPose = Pose.makeTranslation(dx, dy, dz);
-
+            System.out.println("CAMERA POS: " + arFragment.getArSceneView().getScene().getCamera().getWorldPosition());
             System.out.println(dx + " " + dy + " " + dz);
 
             Anchor anchor = arFragment.getArSceneView().getSession().createAnchor(targetPose);
@@ -102,10 +105,10 @@ public class MainActivity4 extends AppCompatActivity {
             transformableNode.setParent(currentAnchorNode);
             transformableNode.setLocalScale(new Vector3(5.0f, 5.0f, 5.0f));
             System.out.println("Placed object");
-            if (currentLocation.getAccuracy() < 2.6f)
-                locationHelper.stop();
 
         } catch (Exception ignored) {
+            System.out.println("ERROR: " + ignored.getMessage());
+            ignored.printStackTrace();
         }
     }
 
@@ -127,12 +130,8 @@ public class MainActivity4 extends AppCompatActivity {
 
 
         //TODO Set up gps tracking and what to do with data HERE
-        locationHelper.AddCallBack(x -> {
-            currentLocation = x;
-            placeModel();
 
-            System.out.println("ACC: " + currentLocation.getAccuracy() + "alt: " + currentLocation.getAltitude() + " lat:" + currentLocation.getLatitude() + " long:" + currentLocation.getLongitude());
-        });
+
         arFragment.onResume();
         Config conf = arFragment.getArSceneView().getSession().getConfig();
         conf.setFocusMode(Config.FocusMode.AUTO);
@@ -142,19 +141,33 @@ public class MainActivity4 extends AppCompatActivity {
         PointManager pointManager = new PointManager(Storage.INSTANCE.getLevels().stream().flatMap(x -> x.getPointSet().stream()).filter(x -> x.getId() == pointId).findFirst().get());
         pointManager.pointManagerCallback(new Location("ASD"));
         super.onResume();
+        //Timer Scheduler for object placement
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                currentLocation = LocationTracker.getInstance(null).getSmoothedLocation();
+                System.out.println("ACC: " + currentLocation.getAccuracy() + "alt: " + currentLocation.getAltitude() + " lat:" + currentLocation.getLatitude() + " long:" + currentLocation.getLongitude());
+                runOnUiThread(() -> placeModel());
+            }
+        }, 5000, 2000);
+
+
     }
 
 
     @Override
     protected void onDestroy() {
         arFragment.onDestroy();
-        locationHelper.stop();
+        placementTimer.cancel();
+        placementTimer.purge();
         super.onDestroy();
     }
 
     @Override
     public void onPause() {
         arFragment.onPause();
+        placementTimer.cancel();
+        placementTimer.purge();
         super.onPause();
     }
 }
