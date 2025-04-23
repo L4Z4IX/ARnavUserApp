@@ -13,9 +13,9 @@ import com.google.ar.core.Pose;
 import com.google.ar.core.examples.java.common.entityModel.Storage;
 import com.google.ar.core.examples.java.common.helpers.CameraPermissionHelper;
 import com.google.ar.core.examples.java.common.helpers.LocationPermissionHelper;
-import com.google.ar.core.examples.java.common.navigation.LocationTracker;
 import com.google.ar.core.examples.java.common.navigation.PointManager;
 import com.google.ar.core.examples.java.common.navigation.RotationProvider;
+import com.google.ar.core.examples.java.common.navigation.SensorFusionLocationProcessor;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
@@ -45,8 +45,8 @@ public class MainActivity4 extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main4);
         testLocation.setAltitude(256.8999938964844);
-        testLocation.setLatitude(46.077750563211346);
-        testLocation.setLongitude(18.286234115529222);
+        testLocation.setLatitude(46.07775730076584);
+        testLocation.setLongitude(18.286222596464775);
 
         ModelRenderable.builder()
                 .setSource(this, R.raw.pawn).build().thenAccept(r -> renderable = r);
@@ -151,7 +151,7 @@ public class MainActivity4 extends AppCompatActivity {
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
-                currentLocation = LocationTracker.getInstance(null).getSmoothedLocation();
+                currentLocation = SensorFusionLocationProcessor.getInstance().getCurrentEstimatedLocation();
                 angleCorrection = (float) Math.toRadians(-RotationProvider.getInstance(null).getFilteredAzimuth());
                 System.out.println("ACC: " + currentLocation.getAccuracy() + "alt: " + currentLocation.getAltitude() + " lat:" + currentLocation.getLatitude() + " long:" + currentLocation.getLongitude());
                 runOnUiThread(() -> placeModel());
