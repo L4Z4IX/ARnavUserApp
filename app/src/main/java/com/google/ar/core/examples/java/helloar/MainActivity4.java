@@ -37,7 +37,7 @@ public class MainActivity4 extends AppCompatActivity {
     private final Location testLocation = new Location("manual");
     private ModelRenderable renderable;
     private int pointId;
-    private Timer placementTimer;
+    private final Timer placementTimer = new Timer();
 
 
     @Override
@@ -64,6 +64,7 @@ public class MainActivity4 extends AppCompatActivity {
     }
 
     private void placeModel() {
+
         double distance = currentLocation.distanceTo(testLocation);
         double bearing = currentLocation.bearingTo(testLocation);
 
@@ -116,6 +117,7 @@ public class MainActivity4 extends AppCompatActivity {
             System.out.println("ERROR: " + ignored.getMessage());
             ignored.printStackTrace();
         }
+        throw new RuntimeException();
     }
 
     @SuppressLint("MissingPermission")
@@ -134,10 +136,6 @@ public class MainActivity4 extends AppCompatActivity {
             return;
         }
 
-
-        //TODO Set up gps tracking and what to do with data HERE
-
-
         arFragment.onResume();
         Config conf = arFragment.getArSceneView().getSession().getConfig();
         conf.setFocusMode(Config.FocusMode.AUTO);
@@ -148,7 +146,7 @@ public class MainActivity4 extends AppCompatActivity {
         pointManager.pointManagerCallback(new Location("ASD"));
         super.onResume();
         //Timer Scheduler for object placement
-        new Timer().schedule(new TimerTask() {
+        placementTimer.schedule(new TimerTask() {
             @Override
             public void run() {
                 currentLocation = SensorFusionLocationProcessor.getInstance().getCurrentEstimatedLocation();
@@ -157,7 +155,6 @@ public class MainActivity4 extends AppCompatActivity {
                 runOnUiThread(() -> placeModel());
             }
         }, 5000, 2000);
-
 
     }
 
