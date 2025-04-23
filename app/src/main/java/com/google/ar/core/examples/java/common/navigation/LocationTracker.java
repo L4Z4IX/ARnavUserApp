@@ -14,13 +14,13 @@ import com.google.android.gms.location.LocationServices;
 public class LocationTracker {
     private static LocationTracker instance;
     private final FusedLocationProviderClient fusedLocationClient;
-    private final KalmanFilter kalman;
+    private final GPSKalmanFilter kalman;
 
     private boolean isTracking = false;
 
     private LocationTracker(Context ctx) {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(ctx.getApplicationContext());
-        kalman = new KalmanFilter();
+        kalman = new GPSKalmanFilter();
     }
 
     public static LocationTracker getInstance(Context ctx) {

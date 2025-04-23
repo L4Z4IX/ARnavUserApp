@@ -1,6 +1,6 @@
 package com.google.ar.core.examples.java.common.navigation;
 
-public class KalmanFilter {
+public class GPSKalmanFilter {
 
     private final double minAccuracy = 1;
 
@@ -9,7 +9,7 @@ public class KalmanFilter {
     private long timestamp;
     private boolean isInitialized = false;
 
-    public KalmanFilter() {
+    public GPSKalmanFilter() {
 
     }
 

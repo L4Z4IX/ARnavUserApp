@@ -15,7 +15,9 @@ import com.google.ar.core.examples.java.common.helpers.CameraPermissionHelper;
 import com.google.ar.core.examples.java.common.helpers.LocationPermissionHelper;
 import com.google.ar.core.examples.java.common.navigation.LocationTracker;
 import com.google.ar.core.examples.java.common.navigation.PointManager;
+import com.google.ar.core.examples.java.common.navigation.RotationProvider;
 import com.google.ar.sceneform.AnchorNode;
+import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.Material;
 import com.google.ar.sceneform.rendering.ModelRenderable;
@@ -31,6 +33,7 @@ public class MainActivity4 extends AppCompatActivity {
     AnchorNode currentAnchorNode;
 
     private volatile Location currentLocation;
+    private volatile float angleCorrection;
     private final Location testLocation = new Location("manual");
     private ModelRenderable renderable;
     private int pointId;
@@ -68,7 +71,10 @@ public class MainActivity4 extends AppCompatActivity {
         float dy = (float) (currentLocation.getAltitude() - testLocation.getAltitude());
         float dz = (float) (-distance * Math.cos(Math.toRadians(bearing)));
         try {
-            Pose targetPose = Pose.makeTranslation(dx, dy, dz);
+            Pose diffPose = Pose.makeTranslation(dx, dy, dz);
+            float[] poseQ = diffPose.getRotationQuaternion();
+            Quaternion rotationQ = Quaternion.multiply(new Quaternion(0f, 1f, 0f, angleCorrection), new Quaternion(poseQ[0], poseQ[1], poseQ[2], poseQ[3]));
+            Pose targetPose = Pose.makeRotation(rotationQ.x, rotationQ.y, rotationQ.z, rotationQ.w).compose(Pose.makeTranslation(diffPose.getTranslation()));
             System.out.println("CAMERA POS: " + arFragment.getArSceneView().getScene().getCamera().getWorldPosition());
             System.out.println(dx + " " + dy + " " + dz);
 
@@ -146,6 +152,7 @@ public class MainActivity4 extends AppCompatActivity {
             @Override
             public void run() {
                 currentLocation = LocationTracker.getInstance(null).getSmoothedLocation();
+                angleCorrection = (float) Math.toRadians(-RotationProvider.getInstance(null).getFilteredAzimuth());
                 System.out.println("ACC: " + currentLocation.getAccuracy() + "alt: " + currentLocation.getAltitude() + " lat:" + currentLocation.getLatitude() + " long:" + currentLocation.getLongitude());
                 runOnUiThread(() -> placeModel());
             }
