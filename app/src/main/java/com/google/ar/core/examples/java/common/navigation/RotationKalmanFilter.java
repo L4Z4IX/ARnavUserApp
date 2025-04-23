@@ -2,7 +2,7 @@ package com.google.ar.core.examples.java.common.navigation;
 
 public class RotationKalmanFilter {
     private float q = 0.001f;  // process noise
-    private float r = 0.5f;    // measurement noise
+    private float r = 0.5f;    // default measurement noise
     private float x = 0;       // estimated value
     private float p = 1;       // estimation error
     private float k;           // kalman gain
@@ -11,16 +11,22 @@ public class RotationKalmanFilter {
         this.x = initVal;
     }
 
-    public float update(float measurement) {
+    // Overload: allow setting measurement noise per reading
+    public float update(float measurement, float measurementNoise) {
         // Prediction update
         p += q;
 
         // Measurement update
-        k = p / (p + r);
+        float rLocal = (measurementNoise > 0) ? measurementNoise : r;
+        k = p / (p + rLocal);
         x += k * (measurement - x);
         p *= (1 - k);
 
         return x;
+    }
+
+    public float update(float measurement) {
+        return update(measurement, -1); // fallback to default noise
     }
 
     public void setNoise(float processNoise, float measurementNoise) {

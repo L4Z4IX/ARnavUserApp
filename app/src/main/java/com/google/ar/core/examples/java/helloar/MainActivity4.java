@@ -45,8 +45,8 @@ public class MainActivity4 extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main4);
         testLocation.setAltitude(256.8999938964844);
-        testLocation.setLatitude(46.07772804106784);
-        testLocation.setLongitude(18.286214778052006);
+        testLocation.setLatitude(46.077750563211346);
+        testLocation.setLongitude(18.286234115529222);
 
         ModelRenderable.builder()
                 .setSource(this, R.raw.pawn).build().thenAccept(r -> renderable = r);

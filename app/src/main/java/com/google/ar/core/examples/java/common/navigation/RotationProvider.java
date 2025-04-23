@@ -13,6 +13,7 @@ public class RotationProvider implements SensorEventListener {
 
     private final float[] rotationMatrix = new float[9];
     private final float[] orientation = new float[3];
+    private int accuracy = SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM;
 
     private float filteredAzimuthDeg = 0;
     private static RotationProvider INSTANCE;
@@ -45,12 +46,28 @@ public class RotationProvider implements SensorEventListener {
         float azimuthRad = orientation[0];
         float azimuthDeg = (float) Math.toDegrees(azimuthRad);
         if (azimuthDeg < 0) azimuthDeg += 360;
+        float measurementNoise;
+        switch (accuracy) {
+            case SensorManager.SENSOR_STATUS_ACCURACY_HIGH:
+                measurementNoise = 0.1f;
+                break;
+            case SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM:
+                measurementNoise = 0.5f;
+                break;
+            case SensorManager.SENSOR_STATUS_ACCURACY_LOW:
+                measurementNoise = 1.5f;
+                break;
+            default: // unreliable
+                measurementNoise = 3.0f;
+                break;
+        }
 
-        filteredAzimuthDeg = kalmanAzimuth.update(azimuthDeg);
+        filteredAzimuthDeg = kalmanAzimuth.update(azimuthDeg, measurementNoise);
     }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        this.accuracy = accuracy;
     }
 
     public float getFilteredAzimuth() {
