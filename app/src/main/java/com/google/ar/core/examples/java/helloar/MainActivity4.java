@@ -17,7 +17,6 @@ import com.google.ar.core.examples.java.common.navigation.PointManager;
 import com.google.ar.core.examples.java.common.navigation.RotationProvider;
 import com.google.ar.core.examples.java.common.navigation.SensorFusionLocationProcessor;
 import com.google.ar.sceneform.AnchorNode;
-import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.Material;
 import com.google.ar.sceneform.rendering.ModelRenderable;
@@ -45,8 +44,8 @@ public class MainActivity4 extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main4);
         testLocation.setAltitude(256.8999938964844);
-        testLocation.setLatitude(46.07775730076584);
-        testLocation.setLongitude(18.286222596464775);
+        testLocation.setLatitude(46.077714418320454);
+        testLocation.setLongitude(18.286240170648572);
 
         ModelRenderable.builder()
                 .setSource(this, R.raw.pawn).build().thenAccept(r -> renderable = r);
@@ -63,6 +62,18 @@ public class MainActivity4 extends AppCompatActivity {
 
     }
 
+    private float[] getQuaternionFromAxisAngle(float x, float y, float z, float angleRad) {
+        float sinHalfAngle = (float) Math.sin(angleRad / 2);
+        float cosHalfAngle = (float) Math.cos(angleRad / 2);
+        return new float[]{
+                x * sinHalfAngle,
+                y * sinHalfAngle,
+                z * sinHalfAngle,
+                cosHalfAngle
+        };
+    }
+
+
     private void placeModel() {
 
         double distance = currentLocation.distanceTo(testLocation);
@@ -73,11 +84,10 @@ public class MainActivity4 extends AppCompatActivity {
         float dz = (float) (-distance * Math.cos(Math.toRadians(bearing)));
         try {
             Pose diffPose = Pose.makeTranslation(dx, dy, dz);
-            float[] poseQ = diffPose.getRotationQuaternion();
-            Quaternion rotationQ = Quaternion.multiply(new Quaternion(0f, 1f, 0f, angleCorrection), new Quaternion(poseQ[0], poseQ[1], poseQ[2], poseQ[3]));
-            Pose targetPose = Pose.makeRotation(rotationQ.x, rotationQ.y, rotationQ.z, rotationQ.w).compose(Pose.makeTranslation(diffPose.getTranslation()));
+            Pose targetPose = new Pose(diffPose.getTranslation(), getQuaternionFromAxisAngle(0f, 1f, 0f, angleCorrection));
             System.out.println("CAMERA POS: " + arFragment.getArSceneView().getScene().getCamera().getWorldPosition());
-            System.out.println(dx + " " + dy + " " + dz);
+            System.out.println("D: " + dx + " " + dy + " " + dz);
+            System.out.println("T:" + targetPose);
 
             Anchor anchor = arFragment.getArSceneView().getSession().createAnchor(targetPose);
             if (currentAnchorNode != null) {
@@ -117,7 +127,6 @@ public class MainActivity4 extends AppCompatActivity {
             System.out.println("ERROR: " + ignored.getMessage());
             ignored.printStackTrace();
         }
-        throw new RuntimeException();
     }
 
     @SuppressLint("MissingPermission")
