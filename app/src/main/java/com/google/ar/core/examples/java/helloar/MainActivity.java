@@ -11,6 +11,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.ar.core.examples.java.common.helpers.CameraPermissionHelper;
+import com.google.ar.core.examples.java.common.helpers.LocationPermissionHelper;
 import com.google.ar.core.examples.java.common.httpConnection.HttpConnectionHandler;
 
 import okhttp3.Response;
@@ -75,6 +77,18 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "Please enter an address", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (!CameraPermissionHelper.hasCameraPermission(this)) {
+            CameraPermissionHelper.requestCameraPermission(this);
+            return;
+        }
+        if (!LocationPermissionHelper.hasFineLocationPermission(this)) {
+            LocationPermissionHelper.requestFineLocationPermission(this);
+        }
     }
 
     // Function to show a popup dialog

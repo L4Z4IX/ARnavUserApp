@@ -11,12 +11,11 @@ import com.google.ar.core.ArCoreApk;
 import com.google.ar.core.Config;
 import com.google.ar.core.Pose;
 import com.google.ar.core.examples.java.common.entityModel.Storage;
-import com.google.ar.core.examples.java.common.helpers.CameraPermissionHelper;
-import com.google.ar.core.examples.java.common.helpers.LocationPermissionHelper;
+import com.google.ar.core.examples.java.common.navigation.LocationProvider;
 import com.google.ar.core.examples.java.common.navigation.PointManager;
 import com.google.ar.core.examples.java.common.navigation.RotationProvider;
-import com.google.ar.core.examples.java.common.navigation.SensorFusionLocationProcessor;
 import com.google.ar.sceneform.AnchorNode;
+import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.Material;
 import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.ux.ArFragment;
@@ -45,8 +44,8 @@ public class MainActivity4 extends AppCompatActivity {
         setContentView(R.layout.activity_main4);
         rotationProvider = new RotationProvider(this);
         testLocation.setAltitude(256.8999938964844);
-        testLocation.setLatitude(46.077735303698866);
-        testLocation.setLongitude(18.286212035509926);
+        testLocation.setLatitude(46.07776651999999);
+        testLocation.setLongitude(18.286225499999993);
 
         ModelRenderable.builder()
                 .setSource(this, R.raw.pawn).build().thenAccept(r -> renderable = r);
@@ -59,10 +58,10 @@ public class MainActivity4 extends AppCompatActivity {
     }
 
     private void placeModel() {
-//        double distance = currentLocation.distanceTo(testLocation);
-//        double bearing = (currentLocation.bearingTo(testLocation) + 360) % 360;
-        double distance = 5f;
-        double bearing = 300;
+        double distance = currentLocation.distanceTo(testLocation);
+        double bearing = (currentLocation.bearingTo(testLocation) + 360) % 360;
+//        double distance = 5f;
+//        double bearing = 300;
         double radToNorth = Math.toRadians(degreesToNorth);
 
         float[] zAxis = arFragment.getArSceneView().getArFrame().getCamera().getPose().getZAxis();
@@ -82,8 +81,8 @@ public class MainActivity4 extends AppCompatActivity {
         float dz = (float) (distance * Math.cos(worldRotation));
 
         try {
-
-            Pose targetPose = Pose.makeTranslation(dx, dy, dz);
+            Vector3 worldpose = arFragment.getArSceneView().getScene().getCamera().getWorldPosition();
+            Pose targetPose = Pose.makeTranslation(dx - worldpose.x, dy - worldpose.y, dz - worldpose.z);
             System.out.println("CAMERA POS: " + arFragment.getArSceneView().getScene().getCamera().getWorldPosition());
             System.out.println("CALC DIST: " + distance + " D: " + dx + " " + dy + " " + dz);
             System.out.println("ANDROID SENSOR POSE: " + arFragment.getArSceneView().getArFrame().getAndroidSensorPose());
@@ -136,15 +135,6 @@ public class MainActivity4 extends AppCompatActivity {
 
         ArCoreApk.Availability availability = ArCoreApk.getInstance().checkAvailability(this);
 
-        if (!CameraPermissionHelper.hasCameraPermission(this)) {
-            CameraPermissionHelper.requestCameraPermission(this);
-            return;
-        }
-        if (!LocationPermissionHelper.hasFineLocationPermission(this)) {
-            LocationPermissionHelper.requestFineLocationPermission(this);
-            return;
-        }
-
         arFragment.onResume();
         Config conf = arFragment.getArSceneView().getSession().getConfig();
         conf.setFocusMode(Config.FocusMode.AUTO);
@@ -159,7 +149,8 @@ public class MainActivity4 extends AppCompatActivity {
         placementTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                currentLocation = SensorFusionLocationProcessor.getInstance().getCurrentEstimatedLocation();
+                //currentLocation = SensorFusionLocationProcessor.getInstance().getCurrentEstimatedLocation();
+                currentLocation = LocationProvider.getInstance(null).getCurrentLocation();
                 degreesToNorth = rotationProvider.getAzimuth();
                 System.out.println("ACC: " + currentLocation.getAccuracy() + "alt: " + currentLocation.getAltitude() + " lat:" + currentLocation.getLatitude() + " long:" + currentLocation.getLongitude());
                 runOnUiThread(() -> placeModel());
