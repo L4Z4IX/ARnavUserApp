@@ -21,6 +21,8 @@ public class LocationProvider {
     private static LocationProvider INSTANCE;
     private final FusedLocationProviderClient fusedLocationClient;
     private final ArrayList<Location> locationHistory = new ArrayList<>();
+    private double distanceToZero = 0;
+    private double bearingDegreesToZero = 0;
     private final LocationCallback locationCallback = new LocationCallback() {
         @Override
         public void onLocationResult(@NonNull LocationResult locationResult) {
@@ -57,17 +59,41 @@ public class LocationProvider {
 
     private void addToHistory(Location location) {
         locationHistory.add(new Location(location));
-        if (locationHistory.size() > 15) {
-            locationHistory.remove(0);
+        if (locationHistory.size() > 30) {
+            int maxIndex = 0;
+            for (int i = 1; i < locationHistory.size(); i++)
+                if (locationHistory.get(maxIndex).getAccuracy() < locationHistory.get(i).getAccuracy())
+                    maxIndex = i;
+
+            locationHistory.remove(maxIndex);
         }
     }
 
-    private void inflateAccuracies() {
-        for (int i = 0; i < locationHistory.size(); i++) {
-            float acc = locationHistory.get(i).getAccuracy();
-            float newAcc = (float) (acc * Math.pow(1.1, locationHistory.size() - i));
-            locationHistory.get(i).setAccuracy(newAcc);
-        }
+    private Location moveLocation(Location start, double distanceMeters, double bearingDegrees) {
+        double R = 6371000; // Earth radius in meters
+        double angleRad = bearingDegrees * Math.PI / 180;
+        double latRad = start.getLatitude() * Math.PI / 180;
+        double lngRad = start.getLongitude() * Math.PI / 180;
+
+        double destLat = Math.asin(Math.sin(latRad) * Math.cos(distanceMeters / R) +
+                Math.cos(latRad) * Math.sin(distanceMeters / R) * Math.cos(angleRad));
+        double destLng = lngRad + Math.atan2(
+                Math.sin(angleRad) * Math.sin(distanceMeters / R) * Math.cos(latRad),
+                Math.cos(distanceMeters / R) - Math.sin(latRad) * Math.sin(destLat)
+        );
+
+
+        Location result = new Location(start);
+        result.setLatitude(destLat * 180 / Math.PI);
+        result.setLongitude(destLng * 180 / Math.PI);
+        result.setAltitude(start.getAltitude());
+
+        return result;
+    }
+    
+    public void updateLocations(double distanceToZeroMeters, double bearingDegreesToZero) {
+        this.distanceToZero = distanceToZeroMeters;
+        this.bearingDegreesToZero = bearingDegreesToZero;
     }
 
     private Location fuseLocationHistory() {
@@ -88,14 +114,17 @@ public class LocationProvider {
     }
 
     private void process(Location newLocation) {
-        addToHistory(newLocation);
-        if (currentLocation == null) {
-            currentLocation = newLocation;
-            return;
+        if (distanceToZero == 0 && bearingDegreesToZero == 0) {
+            addToHistory(newLocation);
+        } else {
+            Location movedLocation = moveLocation(newLocation, distanceToZero, bearingDegreesToZero);
+            addToHistory(movedLocation);
+            //System.out.println("LOCPROC:def: d: " + distanceToZero + " b: " + bearingDegreesToZero + " new d: " + newLocation.distanceTo(movedLocation) + " b: " + movedLocation.bearingTo(newLocation));
+            System.out.println("AAA" + newLocation.getLatitude() + ";" + newLocation.getLongitude() + ";" + newLocation.getAccuracy());
+            System.out.println("AAA" + bearingDegreesToZero + ";" + distanceToZero);
+            System.out.println("AAA" + movedLocation.getLatitude() + ";" + movedLocation.getLongitude() + ";" + movedLocation.getAccuracy());
         }
-        //inflateAccuracies();
         currentLocation = fuseLocationHistory();
-
     }
 
 

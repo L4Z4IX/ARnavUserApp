@@ -21,6 +21,9 @@ import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.ux.ArFragment;
 import com.google.ar.sceneform.ux.TransformableNode;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -30,13 +33,27 @@ public class MainActivity4 extends AppCompatActivity {
     AnchorNode currentAnchorNode;
 
     private volatile Location currentLocation;
-    private volatile double degreesToNorth;
     private final Location testLocation = new Location("manual");
     private ModelRenderable renderable;
     private int pointId;
     private final Timer placementTimer = new Timer();
     private RotationProvider rotationProvider;
+    private final List<Double> fakeToRealHistory = Collections.synchronizedList(new ArrayList<>());
 
+    private void addFakeToRealHistory(double reading) {
+        reading = (360 + reading) % 360;
+        synchronized (fakeToRealHistory) {
+            fakeToRealHistory.add(reading);
+            if (fakeToRealHistory.size() > 20)
+                fakeToRealHistory.remove(0);
+        }
+    }
+
+    private double getAVGDegreesFakeToReal() {
+        synchronized (fakeToRealHistory) {
+            return fakeToRealHistory.stream().mapToDouble(x -> x).average().getAsDouble();
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,8 +61,8 @@ public class MainActivity4 extends AppCompatActivity {
         setContentView(R.layout.activity_main4);
         rotationProvider = new RotationProvider(this);
         testLocation.setAltitude(256.8999938964844);
-        testLocation.setLatitude(46.07776651999999);
-        testLocation.setLongitude(18.286225499999993);
+        testLocation.setLatitude(46.07773314317652);
+        testLocation.setLongitude(18.286210482154498);
 
         ModelRenderable.builder()
                 .setSource(this, R.raw.pawn).build().thenAccept(r -> renderable = r);
@@ -57,36 +74,34 @@ public class MainActivity4 extends AppCompatActivity {
 
     }
 
+    private double getDegreesToFakeNorth() {
+        float[] zAxis = arFragment.getArSceneView().getArFrame().getCamera().getPose().getZAxis();
+        float forwardX = zAxis[0];
+        float forwardZ = zAxis[2];
+        return (360 - Math.toDegrees(Math.atan2(forwardX, forwardZ))) % 360;
+    }
+
     private void placeModel() {
         double distance = currentLocation.distanceTo(testLocation);
         double bearing = (currentLocation.bearingTo(testLocation) + 360) % 360;
 //        double distance = 5f;
 //        double bearing = 300;
-        double radToNorth = Math.toRadians(degreesToNorth);
 
-        float[] zAxis = arFragment.getArSceneView().getArFrame().getCamera().getPose().getZAxis();
-        float forwardX = zAxis[0];
-        float forwardZ = zAxis[2];
-        double radToFakeNorth = Math.toRadians((360 - Math.toDegrees(Math.atan2(forwardX, forwardZ))) % 360);
-
-        float worldRotation = (float) Math.toRadians((Math.toDegrees(radToNorth - radToFakeNorth + Math.toRadians(bearing)) + 360) % 360);
+        float worldRotation = (float) Math.toRadians((getAVGDegreesFakeToReal() + bearing + 360) % 360);
         //double calculatedRotationRad = Math.toRadians((Math.toDegrees(angleCorrection - angleRadians) + 360) % 360);
         System.out.println("bearing: " + bearing
-                + " azimuth: " + degreesToNorth
-                + " SceneRotation: " + Math.toDegrees(radToFakeNorth)
+                + " Constant rotation: " + getAVGDegreesFakeToReal()
                 + " FinalAngle: " + Math.toDegrees(worldRotation)
         );
+
         float dx = (float) (distance * Math.sin(worldRotation));
         float dy = (float) (currentLocation.getAltitude() - testLocation.getAltitude());
         float dz = (float) (distance * Math.cos(worldRotation));
 
         try {
-            Vector3 worldpose = arFragment.getArSceneView().getScene().getCamera().getWorldPosition();
-            Pose targetPose = Pose.makeTranslation(dx - worldpose.x, dy - worldpose.y, dz - worldpose.z);
-            System.out.println("CAMERA POS: " + arFragment.getArSceneView().getScene().getCamera().getWorldPosition());
+            Pose targetPose = Pose.makeTranslation(dx, dy, dz);
+            //System.out.println("CAMERA POS: " + arFragment.getArSceneView().getScene().getCamera().getWorldPosition());
             System.out.println("CALC DIST: " + distance + " D: " + dx + " " + dy + " " + dz);
-            System.out.println("ANDROID SENSOR POSE: " + arFragment.getArSceneView().getArFrame().getAndroidSensorPose());
-            System.out.println("T:" + targetPose);
 
             Anchor anchor = arFragment.getArSceneView().getSession().createAnchor(targetPose);
             if (currentAnchorNode != null) {
@@ -149,13 +164,26 @@ public class MainActivity4 extends AppCompatActivity {
         placementTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                //currentLocation = SensorFusionLocationProcessor.getInstance().getCurrentEstimatedLocation();
                 currentLocation = LocationProvider.getInstance(null).getCurrentLocation();
-                degreesToNorth = rotationProvider.getAzimuth();
                 System.out.println("ACC: " + currentLocation.getAccuracy() + "alt: " + currentLocation.getAltitude() + " lat:" + currentLocation.getLatitude() + " long:" + currentLocation.getLongitude());
                 runOnUiThread(() -> placeModel());
             }
         }, 5000, 2000);
+        placementTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                Vector3 curLocation = arFragment.getArSceneView().getScene().getCamera().getWorldPosition();
+                curLocation.y = 0;
+                addFakeToRealHistory(rotationProvider.getAzimuth() - getDegreesToFakeNorth());
+                double dist = curLocation.length();
+                double worldBearing = (360 + Math.toDegrees(Math.atan2(curLocation.x, -curLocation.z))) % 360;
+                System.out.println("worldPos: " + curLocation);
+                System.out.println("WORLDBEARING: " + worldBearing);
+                double bearing = (540 + (worldBearing - getAVGDegreesFakeToReal())) % 360;
+                System.out.println("Updateing with dist,bearing: " + dist + " " + bearing);
+                LocationProvider.getInstance(null).updateLocations(dist, bearing);
+            }
+        }, 1000, 1000);
 
     }
 
