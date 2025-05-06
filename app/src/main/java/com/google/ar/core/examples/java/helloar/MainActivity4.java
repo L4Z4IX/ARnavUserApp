@@ -10,9 +10,7 @@ import com.google.ar.core.Anchor;
 import com.google.ar.core.ArCoreApk;
 import com.google.ar.core.Config;
 import com.google.ar.core.Pose;
-import com.google.ar.core.examples.java.common.entityModel.Storage;
 import com.google.ar.core.examples.java.common.navigation.LocationProvider;
-import com.google.ar.core.examples.java.common.navigation.PointManager;
 import com.google.ar.core.examples.java.common.navigation.RotationProvider;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.math.Vector3;
@@ -35,8 +33,8 @@ public class MainActivity4 extends AppCompatActivity {
     private volatile Location currentLocation;
     private final Location testLocation = new Location("manual");
     private ModelRenderable renderable;
-    private int pointId;
-    private final Timer placementTimer = new Timer();
+    //private int pointId;
+    private Timer placementTimer;
     private RotationProvider rotationProvider;
     private final List<Double> fakeToRealHistory = Collections.synchronizedList(new ArrayList<>());
 
@@ -60,9 +58,11 @@ public class MainActivity4 extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main4);
         rotationProvider = new RotationProvider(this);
-        testLocation.setAltitude(256.8999938964844);
-        testLocation.setLatitude(46.07773314317652);
-        testLocation.setLongitude(18.286210482154498);
+        String[] loc = getIntent().getStringExtra("location").split(";");
+        //256.9389721896436;46.07772197234592;18.286188369853672
+        testLocation.setAltitude(Double.parseDouble(loc[0]));
+        testLocation.setLatitude(Double.parseDouble(loc[1]));
+        testLocation.setLongitude(Double.parseDouble(loc[2]));
 
         ModelRenderable.builder()
                 .setSource(this, R.raw.pawn).build().thenAccept(r -> renderable = r);
@@ -70,7 +70,7 @@ public class MainActivity4 extends AppCompatActivity {
 
         arFragment = (ArFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.arfragment);
-        pointId = Integer.parseInt(getIntent().getStringExtra("pointId"));
+        //pointId = Integer.parseInt(getIntent().getStringExtra("pointId"));
 
     }
 
@@ -146,7 +146,7 @@ public class MainActivity4 extends AppCompatActivity {
     @SuppressLint("MissingPermission")
     @Override
     public void onResume() {
-
+        placementTimer = new Timer();
 
         ArCoreApk.Availability availability = ArCoreApk.getInstance().checkAvailability(this);
 
@@ -156,8 +156,8 @@ public class MainActivity4 extends AppCompatActivity {
         conf.setDepthMode(Config.DepthMode.AUTOMATIC);
         conf.setInstantPlacementMode(Config.InstantPlacementMode.LOCAL_Y_UP);
         arFragment.getArSceneView().getSession().configure(conf);
-        PointManager pointManager = new PointManager(Storage.INSTANCE.getLevels().stream().flatMap(x -> x.getPointSet().stream()).filter(x -> x.getId() == pointId).findFirst().get());
-        pointManager.pointManagerCallback(new Location("ASD"));
+        //PointManager pointManager = new PointManager(Storage.INSTANCE.getLevels().stream().flatMap(x -> x.getPointSet().stream()).filter(x -> x.getId() == pointId).findFirst().get());
+        //pointManager.pointManagerCallback(new Location("ASD"));
         super.onResume();
         //Timer Scheduler for object placement
         rotationProvider.start();
