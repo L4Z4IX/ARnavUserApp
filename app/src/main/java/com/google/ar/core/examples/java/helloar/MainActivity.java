@@ -3,7 +3,6 @@ package com.google.ar.core.examples.java.helloar;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -22,26 +21,26 @@ public class MainActivity extends AppCompatActivity {
     private TextView clickableText;
     private EditText editTextInput;
     private Button submitButton;
+    private Button adminButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Initialize UI elements
         clickableText = findViewById(R.id.clickableText);
         editTextInput = findViewById(R.id.editTextInput);
         submitButton = findViewById(R.id.submitButton);
+        adminButton = findViewById(R.id.adminButton);
 
-        // Set click listener for the clickable text (popup dialog)
-        clickableText.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showPopup();
-            }
+        clickableText.setOnClickListener(v -> {
+            showPopup();
+        });
+        adminButton.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, AdminActivity.class);
+            startActivity(intent);
         });
 
-        // Set click listener for the submit button
         submitButton.setOnClickListener(v -> {
             String inputText = editTextInput.getText().toString().trim();
             if (!inputText.isEmpty()) {
@@ -91,7 +90,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Function to show a popup dialog
     private void showPopup() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Where can I find the address?")
