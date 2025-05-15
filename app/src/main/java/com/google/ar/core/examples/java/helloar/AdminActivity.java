@@ -57,9 +57,7 @@ public class AdminActivity extends AppCompatActivity {
             };
             String url = "http://" + address.getText().toString();
             try (Response response = HttpConnectionHandler.INSTANCE.doPost(
-                    url + "/login?" +
-                            "username=" + name.getText().toString() + "&password=" + pass.getText().toString(),
-                    requestBody)) {
+                    url + "/login?username=" + name.getText().toString() + "&password=" + pass.getText().toString())) {
                 if (!response.isSuccessful()) {
                     Toast.makeText(AdminActivity.this, "Invalid creditentials", Toast.LENGTH_SHORT).show();
                 } else {

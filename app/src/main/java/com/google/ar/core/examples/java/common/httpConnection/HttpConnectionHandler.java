@@ -2,6 +2,9 @@ package com.google.ar.core.examples.java.common.httpConnection;
 
 import android.os.StrictMode;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -14,24 +17,26 @@ import java.util.Objects;
 import okhttp3.Cookie;
 import okhttp3.CookieJar;
 import okhttp3.HttpUrl;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okio.BufferedSink;
 
 public class HttpConnectionHandler {
 
     CookieJar cookieJar = new CookieJar() {
-        private final HashMap<HttpUrl, List<Cookie>> cookieStore = new HashMap<>();
+        private final HashMap<String, List<Cookie>> cookieStore = new HashMap<>();
 
         @Override
         public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
-            cookieStore.put(url, cookies);
+            cookieStore.put(url.host(), cookies);
         }
 
         @Override
         public List<Cookie> loadForRequest(HttpUrl url) {
-            return Objects.requireNonNull(cookieStore.getOrDefault(url, new ArrayList<>()));
+            return Objects.requireNonNull(cookieStore.getOrDefault(url.host(), new ArrayList<>()));
         }
     };
     private final OkHttpClient client = new OkHttpClient.Builder()
@@ -47,7 +52,19 @@ public class HttpConnectionHandler {
         return client.newCall(new Request.Builder().url(url).build()).execute();
     }
 
-    public Response doPost(String url, RequestBody requestBody) throws IOException {
+    public Response doPost(String url) throws IOException {
+        RequestBody requestBody = new RequestBody() {
+            @Nullable
+            @Override
+            public MediaType contentType() {
+                return null;
+            }
+
+            @Override
+            public void writeTo(@NonNull BufferedSink bufferedSink) throws IOException {
+
+            }
+        };
         return client.newCall(new Request.Builder().url(url).post(requestBody).build()).execute();
     }
 

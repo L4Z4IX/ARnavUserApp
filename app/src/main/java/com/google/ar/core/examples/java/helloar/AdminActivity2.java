@@ -1,10 +1,14 @@
 package com.google.ar.core.examples.java.helloar;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -40,7 +44,32 @@ public class AdminActivity2 extends AppCompatActivity {
         venueList.setLayoutManager(new LinearLayoutManager(this));
         refreshData();
         addButton.setOnClickListener(v -> {
-            Toast.makeText(AdminActivity2.this, "Clicked on add", Toast.LENGTH_SHORT).show();
+            LayoutInflater inflater = LayoutInflater.from(this);
+            View view = inflater.inflate(R.layout.admin_venue_dialog, null);
+
+            EditText inputName = view.findViewById(R.id.input_name);
+
+            AlertDialog dialog = new AlertDialog.Builder(this)
+                    .setTitle("Add venue")
+                    .setView(view)
+                    .setPositiveButton("Add", (dialogInterface, i) -> {
+                        String name = inputName.getText().toString();
+                        try {
+                            Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/addVenue?venueName=" + name);
+                            if (resp.isSuccessful()) {
+                                Toast.makeText(AdminActivity2.this, "Added venue", Toast.LENGTH_SHORT).show();
+                                refreshData();
+                            }
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            Toast.makeText(AdminActivity2.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss())
+                    .create();
+
+            dialog.show();
         });
         swipeRefreshLayout.setOnRefreshListener(this::refreshData);
 
@@ -56,23 +85,65 @@ public class AdminActivity2 extends AppCompatActivity {
                 throw new IOException();
             }
             Storage.INSTANCE.setVenues(HttpConnectionHandler.INSTANCE.getResponseFromJson(r, Venue.LIST_TYPE_TOKEN));
+
             CustomAdapter<Venue> adapter = new CustomAdapter<>(Storage.INSTANCE.getVenues(), new FormHandler<Venue>() {
                 @Override
                 public void onEditButtonClick(Venue item) {
-                    Toast.makeText(AdminActivity2.this, "Edit of " + item.getName(), Toast.LENGTH_SHORT).show();
+                    LayoutInflater inflater = LayoutInflater.from(AdminActivity2.this);
+                    View view = inflater.inflate(R.layout.admin_venue_dialog, null);
+
+                    EditText inputName = view.findViewById(R.id.input_name);
+                    inputName.setText(item.getName());
+
+                    AlertDialog dialog = new AlertDialog.Builder(AdminActivity2.this)
+                            .setTitle("Edit venue")
+                            .setView(view)
+                            .setPositiveButton("Edit", (dialogInterface, i) -> {
+                                String name = inputName.getText().toString();
+                                try {
+                                    Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/setVenueName?id=" + item.getId() + "&name=" + name);
+                                    if (resp.isSuccessful()) {
+                                        Toast.makeText(AdminActivity2.this, "Updated venue", Toast.LENGTH_SHORT).show();
+                                        refreshData();
+                                    }
+
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                    Toast.makeText(AdminActivity2.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                                }
+                            })
+                            .setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss())
+                            .create();
+
+                    dialog.show();
                 }
 
                 @Override
                 public void onRemoveButtonClick(Venue item) {
-                    Toast.makeText(AdminActivity2.this, "Remove of " + item.getName(), Toast.LENGTH_SHORT).show();
+                    AlertDialog dialog = new AlertDialog.Builder(AdminActivity2.this).setTitle("Confirmation").setMessage("Confirm the removal of " + item.getName() + " venue").setPositiveButton(
+                                    "Confirm", (dialogInterface, i) -> {
+                                        try {
+                                            Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/delVenue?id=" + item.getId());
+                                            if (resp.isSuccessful()) {
+                                                Toast.makeText(AdminActivity2.this, "Removed " + item.getName(), Toast.LENGTH_SHORT).show();
+                                                refreshData();
+                                            }
+                                        } catch (IOException e) {
+                                            Toast.makeText(AdminActivity2.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                                        }
+                                    }
+                            ).setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss())
+                            .create();
+                    dialog.show();
                 }
+            }, item -> {
+                Toast.makeText(AdminActivity2.this, "Selected " + item.getName(), Toast.LENGTH_SHORT).show();
             });
             venueList.setAdapter(adapter);
+
             swipeRefreshLayout.setRefreshing(false);
 
         } catch (IOException e) {
-            System.err.println(e.getMessage());
-            e.printStackTrace();
             Toast.makeText(AdminActivity2.this, "Something went wrong", Toast.LENGTH_SHORT).show();
             swipeRefreshLayout.setRefreshing(false);
         }

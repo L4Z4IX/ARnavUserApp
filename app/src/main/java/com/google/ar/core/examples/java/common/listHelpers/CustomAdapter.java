@@ -13,11 +13,13 @@ import java.util.List;
 public class CustomAdapter<T> extends RecyclerView.Adapter<CustomViewHolder> {
     private final List<T> items;
     private final FormHandler<T> handler;
+    private final OnItemClickListener<T> onItemClickListener;
 
 
-    public CustomAdapter(List<T> items, FormHandler<T> handler) {
+    public CustomAdapter(List<T> items, FormHandler<T> handler, OnItemClickListener<T> onItemClickListener) {
         this.items = items;
         this.handler = handler;
+        this.onItemClickListener = onItemClickListener;
     }
 
 
@@ -35,6 +37,7 @@ public class CustomAdapter<T> extends RecyclerView.Adapter<CustomViewHolder> {
         holder.textView.setText(item.toString()); // Customize if needed
         holder.editButton.setOnClickListener(v -> handler.onEditButtonClick(item));
         holder.removeButton.setOnClickListener(v -> handler.onRemoveButtonClick(item));
+        holder.itemView.setOnClickListener(v -> onItemClickListener.onItemClick(item));
     }
 
     @Override
