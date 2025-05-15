@@ -1,0 +1,21 @@
+package com.google.ar.core.examples.java.common.listHelpers;
+
+import android.view.View;
+import android.widget.ImageButton;
+import android.widget.TextView;
+
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.ar.core.examples.java.helloar.R;
+
+public class CustomViewHolder extends RecyclerView.ViewHolder {
+    TextView textView;
+    ImageButton editButton, removeButton;
+
+    public CustomViewHolder(View view) {
+        super(view);
+        textView = view.findViewById(R.id.list_item_name);
+        editButton = view.findViewById(R.id.editButton);
+        removeButton = view.findViewById(R.id.removeButton);
+    }
+}

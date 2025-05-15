@@ -1,5 +1,6 @@
 package com.google.ar.core.examples.java.helloar;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
@@ -54,16 +55,21 @@ public class AdminActivity extends AppCompatActivity {
 
                 }
             };
+            String url = "http://" + address.getText().toString();
             try (Response response = HttpConnectionHandler.INSTANCE.doPost(
-                    "http://" + address.getText().toString() + "/login?" +
+                    url + "/login?" +
                             "username=" + name.getText().toString() + "&password=" + pass.getText().toString(),
                     requestBody)) {
                 if (!response.isSuccessful()) {
-                    System.out.println("resp code: " + response.code());
                     Toast.makeText(AdminActivity.this, "Invalid creditentials", Toast.LENGTH_SHORT).show();
                 } else {
-                    //TODO successful login
-                    Toast.makeText(AdminActivity.this, "Logged in!", Toast.LENGTH_SHORT).show();
+                    String[] data = HttpConnectionHandler.INSTANCE.getResponseString(
+                            HttpConnectionHandler.INSTANCE.newRequest(url + "/hello")
+                    ).split(";");
+                    Intent intent = new Intent(AdminActivity.this, AdminActivity2.class);
+                    intent.putExtra("url", url);
+                    intent.putExtra("name", data[0]);
+                    startActivity(intent);
                 }
             }
 
