@@ -1,6 +1,5 @@
 package com.google.ar.core.examples.java.helloar;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.google.ar.core.examples.java.common.entityModel.Level;
 import com.google.ar.core.examples.java.common.entityModel.Storage;
 import com.google.ar.core.examples.java.common.entityModel.Venue;
 import com.google.ar.core.examples.java.common.httpConnection.HttpConnectionHandler;
@@ -27,51 +27,53 @@ import java.io.IOException;
 
 import okhttp3.Response;
 
-public class AdminActivity2 extends AppCompatActivity {
+public class AdminActivity3 extends AppCompatActivity {
     String url;
-    RecyclerView venueList;
+    Venue venue;
+    RecyclerView levelList;
     SwipeRefreshLayout swipeRefreshLayout;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_admin2);
+        setContentView(R.layout.activity_admin3);
 
-        TextView serverName = findViewById(R.id.admin_venue_name);
-        venueList = findViewById(R.id.admin_venue_list);
-        swipeRefreshLayout = findViewById(R.id.admin_venue_refreshLayout);
+        levelList = findViewById(R.id.admin_level_list);
+        swipeRefreshLayout = findViewById(R.id.admin_level_refreshLayout);
         ImageButton addButton = findViewById(R.id.level_add_button);
-        Button backButton = findViewById(R.id.backButtonAdmin2);
+        TextView venueName = findViewById(R.id.admin_venueLevel_name);
+        Button backButton = findViewById(R.id.backButtonAdmin3);
 
         backButton.setOnClickListener(v -> {
             finish();
         });
 
-        serverName.setText(getIntent().getStringExtra("name").trim());
         url = getIntent().getStringExtra("url");
-        venueList.setLayoutManager(new LinearLayoutManager(this));
+        venue = new Gson().fromJson(getIntent().getStringExtra("venue"), Venue.class);
+        venueName.setText(venue.getName());
+        levelList.setLayoutManager(new LinearLayoutManager(this));
         refreshData();
         addButton.setOnClickListener(v -> {
             LayoutInflater inflater = LayoutInflater.from(this);
-            View view = inflater.inflate(R.layout.admin_venue_dialog, null);
+            View view = inflater.inflate(R.layout.admin_level_dialog, null);
 
-            EditText inputName = view.findViewById(R.id.input_name);
+            EditText inputName = view.findViewById(R.id.levelName);
 
             AlertDialog dialog = new AlertDialog.Builder(this)
-                    .setTitle("Add venue")
+                    .setTitle("Add level")
                     .setView(view)
                     .setPositiveButton("Add", (dialogInterface, i) -> {
                         String name = inputName.getText().toString();
                         try {
-                            Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/addVenue?venueName=" + name);
+                            Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/addLevel?levelName=" + name + "&venueId=" + venue.getId());
                             if (resp.isSuccessful()) {
-                                Toast.makeText(AdminActivity2.this, "Added venue", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(AdminActivity3.this, "Added level", Toast.LENGTH_SHORT).show();
                                 refreshData();
                             }
 
                         } catch (IOException e) {
                             e.printStackTrace();
-                            Toast.makeText(AdminActivity2.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(AdminActivity3.this, "Something went wrong", Toast.LENGTH_SHORT).show();
                         }
                     })
                     .setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss())
@@ -88,36 +90,36 @@ public class AdminActivity2 extends AppCompatActivity {
         swipeRefreshLayout.setRefreshing(true);
         Storage.INSTANCE.clearInstance();
         try {
-            Response r = HttpConnectionHandler.INSTANCE.newRequest(url + "/data/venues");
+            Response r = HttpConnectionHandler.INSTANCE.newRequest(url + "/data/venuedata/" + venue.getId());
             if (!r.isSuccessful()) {
                 throw new IOException();
             }
-            Storage.INSTANCE.setVenues(HttpConnectionHandler.INSTANCE.getResponseFromJson(r, Venue.LIST_TYPE_TOKEN));
+            Storage.INSTANCE.setLevels(HttpConnectionHandler.INSTANCE.getResponseFromJson(r, Level.LIST_TYPE_TOKEN));
 
-            CustomAdapter<Venue> adapter = new CustomAdapter<>(Storage.INSTANCE.getVenues(), new FormHandler<Venue>() {
+            CustomAdapter<Level> adapter = new CustomAdapter<>(Storage.INSTANCE.getLevels(), new FormHandler<Level>() {
                 @Override
-                public void onEditButtonClick(Venue item) {
-                    LayoutInflater inflater = LayoutInflater.from(AdminActivity2.this);
-                    View view = inflater.inflate(R.layout.admin_venue_dialog, null);
+                public void onEditButtonClick(Level item) {
+                    LayoutInflater inflater = LayoutInflater.from(AdminActivity3.this);
+                    View view = inflater.inflate(R.layout.admin_level_dialog, null);
 
-                    EditText inputName = view.findViewById(R.id.input_name);
+                    EditText inputName = view.findViewById(R.id.levelName);
                     inputName.setText(item.getName());
 
-                    AlertDialog dialog = new AlertDialog.Builder(AdminActivity2.this)
-                            .setTitle("Edit venue")
+                    AlertDialog dialog = new AlertDialog.Builder(AdminActivity3.this)
+                            .setTitle("Edit Level")
                             .setView(view)
                             .setPositiveButton("Edit", (dialogInterface, i) -> {
                                 String name = inputName.getText().toString();
                                 try {
-                                    Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/setVenueName?id=" + item.getId() + "&name=" + name);
+                                    Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/setLevelName?id=" + item.getId() + "&levelName=" + name);
                                     if (resp.isSuccessful()) {
-                                        Toast.makeText(AdminActivity2.this, "Updated venue", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(AdminActivity3.this, "Updated level", Toast.LENGTH_SHORT).show();
                                         refreshData();
                                     }
 
                                 } catch (IOException e) {
                                     e.printStackTrace();
-                                    Toast.makeText(AdminActivity2.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(AdminActivity3.this, "Something went wrong", Toast.LENGTH_SHORT).show();
                                 }
                             })
                             .setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss())
@@ -127,17 +129,17 @@ public class AdminActivity2 extends AppCompatActivity {
                 }
 
                 @Override
-                public void onRemoveButtonClick(Venue item) {
-                    AlertDialog dialog = new AlertDialog.Builder(AdminActivity2.this).setTitle("Confirmation").setMessage("Confirm the removal of " + item.getName() + " venue").setPositiveButton(
+                public void onRemoveButtonClick(Level item) {
+                    AlertDialog dialog = new AlertDialog.Builder(AdminActivity3.this).setTitle("Confirmation").setMessage("Confirm the removal of " + item.getName() + " level").setPositiveButton(
                                     "Confirm", (dialogInterface, i) -> {
                                         try {
-                                            Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/delVenue?id=" + item.getId());
+                                            Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/delLevel?levelId=" + item.getId());
                                             if (resp.isSuccessful()) {
-                                                Toast.makeText(AdminActivity2.this, "Removed " + item.getName(), Toast.LENGTH_SHORT).show();
+                                                Toast.makeText(AdminActivity3.this, "Removed " + item.getName(), Toast.LENGTH_SHORT).show();
                                                 refreshData();
                                             }
                                         } catch (IOException e) {
-                                            Toast.makeText(AdminActivity2.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(AdminActivity3.this, "Something went wrong", Toast.LENGTH_SHORT).show();
                                         }
                                     }
                             ).setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss())
@@ -145,17 +147,14 @@ public class AdminActivity2 extends AppCompatActivity {
                     dialog.show();
                 }
             }, item -> {
-                Intent intent = new Intent(AdminActivity2.this, AdminActivity3.class);
-                intent.putExtra("venue", new Gson().toJson(item));
-                intent.putExtra("url", url);
-                startActivity(intent);
+                Toast.makeText(AdminActivity3.this, "Selected " + item.getName(), Toast.LENGTH_SHORT).show();
             });
-            venueList.setAdapter(adapter);
+            levelList.setAdapter(adapter);
 
             swipeRefreshLayout.setRefreshing(false);
 
         } catch (IOException e) {
-            Toast.makeText(AdminActivity2.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+            Toast.makeText(AdminActivity3.this, "Something went wrong", Toast.LENGTH_SHORT).show();
             swipeRefreshLayout.setRefreshing(false);
         }
     }

@@ -1,6 +1,8 @@
 package com.google.ar.core.examples.java.common.entityModel;
 
 
+import androidx.annotation.NonNull;
+
 import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
@@ -32,6 +34,12 @@ public class Level {
 
     public ArrayList<Point> getPointSet() {
         return pointSet;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return name;
     }
 
 }
