@@ -68,6 +68,10 @@ public class HttpConnectionHandler {
         return client.newCall(new Request.Builder().url(url).post(requestBody).build()).execute();
     }
 
+    public Response doPost(String url, RequestBody requestBody) throws IOException {
+        return client.newCall(new Request.Builder().url(url).post(requestBody).build()).execute();
+    }
+
     public String getResponseString(Response response) throws IOException {
         return response.isSuccessful() ? response.body().string() : null;
     }

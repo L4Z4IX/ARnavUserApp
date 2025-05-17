@@ -5,32 +5,32 @@ import com.google.gson.reflect.TypeToken;
 import java.util.List;
 
 public class Connection implements Comparable<Connection> {
-    private final Integer id;
+    private final Long id;
 
-    private final Integer fromId;
+    private final Long point1Id;
 
-    private final Integer toId;
+    private final Long point2Id;
     private final double distance;
     public static final TypeToken<List<Connection>> LIST_TYPE_TOKEN = new TypeToken<List<Connection>>() {
     };
 
-    public Connection(Integer id, Integer fromId, Integer toId, double distance) {
+    public Connection(Long id, long point1Id, long point2Id, double distance) {
         this.id = id;
-        this.fromId = fromId;
-        this.toId = toId;
+        this.point1Id = point1Id;
+        this.point2Id = point2Id;
         this.distance = distance;
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public Integer getFromId() {
-        return fromId;
+    public Long getPoint1Id() {
+        return point1Id;
     }
 
-    public Integer getToId() {
-        return toId;
+    public Long getPoint2Id() {
+        return point2Id;
     }
 
     public double getDistance() {
@@ -41,5 +41,5 @@ public class Connection implements Comparable<Connection> {
     public int compareTo(Connection o) {
         return (int) (this.distance - o.distance);
     }
-     
+
 }

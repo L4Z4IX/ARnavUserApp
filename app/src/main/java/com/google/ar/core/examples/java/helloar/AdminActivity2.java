@@ -20,6 +20,7 @@ import com.google.ar.core.examples.java.common.entityModel.Storage;
 import com.google.ar.core.examples.java.common.entityModel.Venue;
 import com.google.ar.core.examples.java.common.httpConnection.HttpConnectionHandler;
 import com.google.ar.core.examples.java.common.listHelpers.CustomAdapter;
+import com.google.ar.core.examples.java.common.listHelpers.CustomViewHolder;
 import com.google.ar.core.examples.java.common.listHelpers.FormHandler;
 import com.google.gson.Gson;
 
@@ -65,7 +66,7 @@ public class AdminActivity2 extends AppCompatActivity {
                         try {
                             Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/addVenue?venueName=" + name);
                             if (resp.isSuccessful()) {
-                                Toast.makeText(AdminActivity2.this, "Added venue", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(AdminActivity2.this, resp.body().string(), Toast.LENGTH_SHORT).show();
                                 refreshData();
                             }
 
@@ -94,7 +95,7 @@ public class AdminActivity2 extends AppCompatActivity {
             }
             Storage.INSTANCE.setVenues(HttpConnectionHandler.INSTANCE.getResponseFromJson(r, Venue.LIST_TYPE_TOKEN));
 
-            CustomAdapter<Venue> adapter = new CustomAdapter<>(Storage.INSTANCE.getVenues(), new FormHandler<Venue>() {
+            CustomAdapter<Venue, CustomViewHolder> adapter = new CustomAdapter<>(R.layout.admin_list_item, Storage.INSTANCE.getVenues(), new FormHandler<>() {
                 @Override
                 public void onEditButtonClick(Venue item) {
                     LayoutInflater inflater = LayoutInflater.from(AdminActivity2.this);
@@ -111,7 +112,7 @@ public class AdminActivity2 extends AppCompatActivity {
                                 try {
                                     Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/setVenueName?id=" + item.getId() + "&name=" + name);
                                     if (resp.isSuccessful()) {
-                                        Toast.makeText(AdminActivity2.this, "Updated venue", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(AdminActivity2.this, resp.body().string(), Toast.LENGTH_SHORT).show();
                                         refreshData();
                                     }
 
@@ -133,7 +134,7 @@ public class AdminActivity2 extends AppCompatActivity {
                                         try {
                                             Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/delVenue?id=" + item.getId());
                                             if (resp.isSuccessful()) {
-                                                Toast.makeText(AdminActivity2.this, "Removed " + item.getName(), Toast.LENGTH_SHORT).show();
+                                                Toast.makeText(AdminActivity2.this, resp.body().string(), Toast.LENGTH_SHORT).show();
                                                 refreshData();
                                             }
                                         } catch (IOException e) {
@@ -149,7 +150,7 @@ public class AdminActivity2 extends AppCompatActivity {
                 intent.putExtra("venue", new Gson().toJson(item));
                 intent.putExtra("url", url);
                 startActivity(intent);
-            });
+            }, CustomViewHolder.class);
             venueList.setAdapter(adapter);
 
             swipeRefreshLayout.setRefreshing(false);

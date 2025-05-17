@@ -9,8 +9,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.ar.core.examples.java.helloar.R;
 
 public class CustomViewHolder extends RecyclerView.ViewHolder {
-    TextView textView;
-    ImageButton editButton, removeButton;
+    final TextView textView;
+    final ImageButton editButton, removeButton;
 
     public CustomViewHolder(View view) {
         super(view);

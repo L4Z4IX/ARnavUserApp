@@ -68,7 +68,7 @@ public class MainActivity3 extends AppCompatActivity {
 
             adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,
                     Storage.INSTANCE.getLevels().stream()
-                            .flatMap(x -> x.getPointSet().stream()).toList());
+                            .flatMap(x -> x.getPoints().stream()).toList());
             pointList.setAdapter(adapter);
             pointList.setOnItemClickListener((adapter, v, position, id) -> itemSelected((AdapterView<ArrayAdapter<Point>>) adapter, position));
             Toast.makeText(MainActivity3.this, "Points loaded", Toast.LENGTH_SHORT).show();

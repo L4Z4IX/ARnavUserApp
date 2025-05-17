@@ -22,13 +22,16 @@ public class PointManager {
         location.setLatitude(0f);
         location.setLongitude(0f);
         location.setAltitude(0f);
-        Point closest = Storage.INSTANCE.getLevels().stream().flatMap(x -> x.getPointSet().stream()).min(Comparator.comparingDouble(x ->
-                Math.sqrt(Math.pow(x.getX() - location.getLatitude(), 2) + Math.pow(x.getY() - location.getLongitude(), 2) + Math.pow(x.getZ() - location.getAltitude(), 2))
+        Point closest = Storage.INSTANCE.getLevels().stream().flatMap(x -> x.getPoints().stream()).min(Comparator.comparingDouble(x ->
+                Math.sqrt(Math.pow(x.getLatitude() - location.getLatitude(), 2) + Math.pow(x.getLongitude() - location.getLongitude(), 2) + Math.pow(x.getAltitude() - location.getAltitude(), 2))
         )).get();
         List<Point> points = Dijkstra.solve(Storage.INSTANCE.getConnections(),
-                Storage.INSTANCE.getLevels().stream().flatMap(x -> x.getPointSet().stream()).toList(),
+                Storage.INSTANCE.getLevels().stream().flatMap(x -> x.getPoints().stream()).toList(),
                 closest,
                 destination);
+        System.out.print("ORDER: ");
+        points.forEach(x -> System.out.print(x.getName() + " "));
+        System.out.println();
         next = points.get(points.size() - 1);
     }
 

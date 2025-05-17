@@ -6,33 +6,46 @@ import android.view.ViewGroup;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.ar.core.examples.java.helloar.R;
-
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
-public class CustomAdapter<T> extends RecyclerView.Adapter<CustomViewHolder> {
-    private final List<T> items;
-    private final FormHandler<T> handler;
-    private final OnItemClickListener<T> onItemClickListener;
+public class CustomAdapter<T, VH extends CustomViewHolder> extends RecyclerView.Adapter<VH> {
+    final List<T> items;
+    final FormHandler<T> handler;
+    final OnItemClickListener<T> onItemClickListener;
+    final Class<VH> viewHolderClazz;
+    final private int resource;
 
 
-    public CustomAdapter(List<T> items, FormHandler<T> handler, OnItemClickListener<T> onItemClickListener) {
+    public CustomAdapter(int resource, List<T> items, FormHandler<T> handler, OnItemClickListener<T> onItemClickListener, Class<VH> viewHolderClazz) {
         this.items = items;
         this.handler = handler;
         this.onItemClickListener = onItemClickListener;
+        this.viewHolderClazz = viewHolderClazz;
+        this.resource = resource;
     }
 
 
     @Override
-    public CustomViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public VH onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.admin_list_item, parent, false);
-        return new CustomViewHolder(view);
+                .inflate(resource, parent, false);
+        try {
+            return viewHolderClazz.getDeclaredConstructor(View.class).newInstance(view);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
     @Override
-    public void onBindViewHolder(CustomViewHolder holder, int position) {
+    public void onBindViewHolder(VH holder, int position) {
         T item = items.get(position);
         holder.textView.setText(item.toString()); // Customize if needed
         holder.editButton.setOnClickListener(v -> handler.onEditButtonClick(item));

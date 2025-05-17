@@ -1,5 +1,6 @@
 package com.google.ar.core.examples.java.helloar;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +21,7 @@ import com.google.ar.core.examples.java.common.entityModel.Storage;
 import com.google.ar.core.examples.java.common.entityModel.Venue;
 import com.google.ar.core.examples.java.common.httpConnection.HttpConnectionHandler;
 import com.google.ar.core.examples.java.common.listHelpers.CustomAdapter;
+import com.google.ar.core.examples.java.common.listHelpers.CustomViewHolder;
 import com.google.ar.core.examples.java.common.listHelpers.FormHandler;
 import com.google.gson.Gson;
 
@@ -57,7 +59,7 @@ public class AdminActivity3 extends AppCompatActivity {
             LayoutInflater inflater = LayoutInflater.from(this);
             View view = inflater.inflate(R.layout.admin_level_dialog, null);
 
-            EditText inputName = view.findViewById(R.id.levelName);
+            EditText inputName = view.findViewById(R.id.pointName);
 
             AlertDialog dialog = new AlertDialog.Builder(this)
                     .setTitle("Add level")
@@ -67,7 +69,7 @@ public class AdminActivity3 extends AppCompatActivity {
                         try {
                             Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/addLevel?levelName=" + name + "&venueId=" + venue.getId());
                             if (resp.isSuccessful()) {
-                                Toast.makeText(AdminActivity3.this, "Added level", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(AdminActivity3.this, resp.body().string(), Toast.LENGTH_SHORT).show();
                                 refreshData();
                             }
 
@@ -96,13 +98,13 @@ public class AdminActivity3 extends AppCompatActivity {
             }
             Storage.INSTANCE.setLevels(HttpConnectionHandler.INSTANCE.getResponseFromJson(r, Level.LIST_TYPE_TOKEN));
 
-            CustomAdapter<Level> adapter = new CustomAdapter<>(Storage.INSTANCE.getLevels(), new FormHandler<Level>() {
+            CustomAdapter<Level, CustomViewHolder> adapter = new CustomAdapter<>(R.layout.admin_list_item, Storage.INSTANCE.getLevels(), new FormHandler<>() {
                 @Override
                 public void onEditButtonClick(Level item) {
                     LayoutInflater inflater = LayoutInflater.from(AdminActivity3.this);
                     View view = inflater.inflate(R.layout.admin_level_dialog, null);
 
-                    EditText inputName = view.findViewById(R.id.levelName);
+                    EditText inputName = view.findViewById(R.id.pointName);
                     inputName.setText(item.getName());
 
                     AlertDialog dialog = new AlertDialog.Builder(AdminActivity3.this)
@@ -113,7 +115,7 @@ public class AdminActivity3 extends AppCompatActivity {
                                 try {
                                     Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/setLevelName?id=" + item.getId() + "&levelName=" + name);
                                     if (resp.isSuccessful()) {
-                                        Toast.makeText(AdminActivity3.this, "Updated level", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(AdminActivity3.this, resp.body().string(), Toast.LENGTH_SHORT).show();
                                         refreshData();
                                     }
 
@@ -130,12 +132,12 @@ public class AdminActivity3 extends AppCompatActivity {
 
                 @Override
                 public void onRemoveButtonClick(Level item) {
-                    AlertDialog dialog = new AlertDialog.Builder(AdminActivity3.this).setTitle("Confirmation").setMessage("Confirm the removal of " + item.getName() + " level").setPositiveButton(
+                    AlertDialog dialog = new AlertDialog.Builder(AdminActivity3.this).setTitle("Confirmation").setMessage("Confirm the removal of " + item.getName() + " level. Warning: All corespondent points and connections will be lost!").setPositiveButton(
                                     "Confirm", (dialogInterface, i) -> {
                                         try {
                                             Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/delLevel?levelId=" + item.getId());
                                             if (resp.isSuccessful()) {
-                                                Toast.makeText(AdminActivity3.this, "Removed " + item.getName(), Toast.LENGTH_SHORT).show();
+                                                Toast.makeText(AdminActivity3.this, resp.body().string(), Toast.LENGTH_SHORT).show();
                                                 refreshData();
                                             }
                                         } catch (IOException e) {
@@ -147,8 +149,12 @@ public class AdminActivity3 extends AppCompatActivity {
                     dialog.show();
                 }
             }, item -> {
-                Toast.makeText(AdminActivity3.this, "Selected " + item.getName(), Toast.LENGTH_SHORT).show();
-            });
+                Intent intent = new Intent(AdminActivity3.this, AdminActivity4.class);
+                intent.putExtra("levelId", item.getId() + "");
+                intent.putExtra("venue", new Gson().toJson(venue));
+                intent.putExtra("url", url);
+                startActivity(intent);
+            }, CustomViewHolder.class);
             levelList.setAdapter(adapter);
 
             swipeRefreshLayout.setRefreshing(false);

@@ -1,21 +1,21 @@
 package com.google.ar.core.examples.java.common.entityModel;
 
 public class Point {
-    private final Integer id;
+    private final Long id;
     private final String name;
-    private final double x;
-    private final double y;
-    private final double z;
+    private final double latitude;
+    private final double longitude;
+    private final double altitude;
 
-    public Point(Integer id, String name, double x, double y, double z) {
+    public Point(Long id, String name, double latitude, double longitude, double altitude) {
         this.id = id;
         this.name = name;
-        this.x = x;
-        this.y = y;
-        this.z = z;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.altitude = altitude;
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
@@ -23,16 +23,16 @@ public class Point {
         return name;
     }
 
-    public double getX() {
-        return x;
+    public double getLatitude() {
+        return latitude;
     }
 
-    public double getY() {
-        return y;
+    public double getLongitude() {
+        return longitude;
     }
 
-    public double getZ() {
-        return z;
+    public double getAltitude() {
+        return altitude;
     }
 
     @Override
@@ -47,7 +47,7 @@ public class Point {
 
     @Override
     public int hashCode() {
-        return id;
+        return id.hashCode();
     }
 
     @Override

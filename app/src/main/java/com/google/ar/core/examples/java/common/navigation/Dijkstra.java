@@ -16,7 +16,7 @@ public class Dijkstra {
      * Return points in reversed order
      */
     public static ArrayList<Point> solve(List<Connection> connections, List<Point> points, Point start, Point end) {
-        HashMap<Integer, Point> idToPoint = new HashMap<>();
+        HashMap<Long, Point> idToPoint = new HashMap<>();
         ArrayList<Point> pointsInOrder = new ArrayList<>();
         HashMap<Point, PriorityQueue<Connection>> connectionsWithPriority = new HashMap<>();
         HashMap<Point, Double> distances = new HashMap<>();
@@ -27,7 +27,7 @@ public class Dijkstra {
 
 
         points.forEach(x -> connectionsWithPriority.put(x, new PriorityQueue<>(
-                connections.stream().filter(y -> Objects.equals(y.getFromId(), x.getId()) || Objects.equals(y.getToId(), x.getId())).toList()
+                connections.stream().filter(y -> Objects.equals(y.getPoint1Id(), x.getId()) || Objects.equals(y.getPoint2Id(), x.getId())).toList()
         )));
 
 
@@ -44,7 +44,7 @@ public class Dijkstra {
             if (current.equals(end)) break;
 
             for (Connection conn : connectionsWithPriority.get(current)) {
-                Point neighbor = conn.getFromId().equals(current.getId()) ? idToPoint.get(conn.getToId()) : idToPoint.get(conn.getFromId());
+                Point neighbor = conn.getPoint1Id().equals(current.getId()) ? idToPoint.get(conn.getPoint2Id()) : idToPoint.get(conn.getPoint1Id());
 
                 if (neighbor != null) {
                     Double newDist = distances.get(current) + conn.getDistance();

@@ -15,10 +15,10 @@
         android:text="Level name" />
 
     <EditText
-        android:id="@+id/levelName"
+        android:id="@+id/pointName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
         android:inputType="text"
-        android:text="Name" />
+        android:hint="Name" />
 </LinearLayout>

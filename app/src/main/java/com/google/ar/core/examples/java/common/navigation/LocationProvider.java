@@ -23,6 +23,7 @@ public class LocationProvider {
     private final ArrayList<Location> locationHistory = new ArrayList<>();
     private double distanceToZero = 0;
     private double bearingDegreesToZero = 0;
+    private boolean isTracking = false;
     private final LocationCallback locationCallback = new LocationCallback() {
         @Override
         public void onLocationResult(@NonNull LocationResult locationResult) {
@@ -42,19 +43,24 @@ public class LocationProvider {
         return INSTANCE;
     }
 
-    @RequiresPermission(allOf = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACTIVITY_RECOGNITION})
+    @RequiresPermission(allOf = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION})
     public void start() {
-        LocationRequest request = LocationRequest.create()
-                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                .setInterval(1000)
-                .setFastestInterval(500);
+        locationHistory.clear();
+        if (!isTracking) {
+            LocationRequest request = LocationRequest.create()
+                    .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                    .setInterval(1000)
+                    .setFastestInterval(500);
 
-        fusedLocationClient.requestLocationUpdates(request, locationCallback, Looper.getMainLooper());
+            fusedLocationClient.requestLocationUpdates(request, locationCallback, Looper.getMainLooper());
+            isTracking = true;
+        }
     }
 
-    @RequiresPermission(Manifest.permission.ACTIVITY_RECOGNITION)
     public void stop() {
-        fusedLocationClient.removeLocationUpdates(locationCallback);
+        if (isTracking)
+            fusedLocationClient.removeLocationUpdates(locationCallback);
+        isTracking = false;
     }
 
     private void addToHistory(Location location) {
@@ -90,7 +96,7 @@ public class LocationProvider {
 
         return result;
     }
-    
+
     public void updateLocations(double distanceToZeroMeters, double bearingDegreesToZero) {
         this.distanceToZero = distanceToZeroMeters;
         this.bearingDegreesToZero = bearingDegreesToZero;

@@ -156,11 +156,12 @@ public class MainActivity4 extends AppCompatActivity {
         conf.setDepthMode(Config.DepthMode.AUTOMATIC);
         conf.setInstantPlacementMode(Config.InstantPlacementMode.LOCAL_Y_UP);
         arFragment.getArSceneView().getSession().configure(conf);
-        PointManager pointManager = new PointManager(Storage.INSTANCE.getLevels().stream().flatMap(x -> x.getPointSet().stream()).filter(x -> x.getId() == pointId).findFirst().get());
+        PointManager pointManager = new PointManager(Storage.INSTANCE.getLevels().stream().flatMap(x -> x.getPoints().stream()).filter(x -> x.getId() == pointId).findFirst().get());
         pointManager.pointManagerCallback(new Location("ASD"));
         super.onResume();
         //Timer Scheduler for object placement
         rotationProvider.start();
+        LocationProvider.getInstance(null).start();
         placementTimer.schedule(new TimerTask() {
             @Override
             public void run() {
@@ -194,6 +195,7 @@ public class MainActivity4 extends AppCompatActivity {
         rotationProvider.stop();
         placementTimer.cancel();
         placementTimer.purge();
+        LocationProvider.getInstance(null).stop();
         super.onDestroy();
     }
 
@@ -203,6 +205,7 @@ public class MainActivity4 extends AppCompatActivity {
         rotationProvider.stop();
         placementTimer.cancel();
         placementTimer.purge();
+        LocationProvider.getInstance(null).stop();
         super.onPause();
     }
 }
