@@ -1,6 +1,7 @@
 package com.google.ar.core.examples.java.helloar;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -182,7 +183,12 @@ public class AdminActivity4 extends AppCompatActivity {
             CustomPointAdapter adapter = new CustomPointAdapter(R.layout.admin_pointlist_item, level.getPoints(), new PointFormHandler() {
                 @Override
                 public void onManageConnectionClick(Point item) {
-                    Toast.makeText(AdminActivity4.this, "Editing", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(AdminActivity4.this, AdminActivity5.class);
+                    intent.putExtra("url", url);
+                    intent.putExtra("levelId", level.getId() + "");
+                    intent.putExtra("venue", new Gson().toJson(venue));
+                    intent.putExtra("point", new Gson().toJson(item));
+                    startActivity(intent);
                 }
 
                 @SuppressLint("MissingPermission")

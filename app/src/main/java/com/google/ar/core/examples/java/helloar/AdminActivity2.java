@@ -129,7 +129,7 @@ public class AdminActivity2 extends AppCompatActivity {
 
                 @Override
                 public void onRemoveButtonClick(Venue item) {
-                    AlertDialog dialog = new AlertDialog.Builder(AdminActivity2.this).setTitle("Confirmation").setMessage("Confirm the removal of " + item.getName() + " venue").setPositiveButton(
+                    AlertDialog dialog = new AlertDialog.Builder(AdminActivity2.this).setTitle("Confirmation").setMessage("Confirm the removal of " + item.getName() + " venue. Warning: all corespondent levels, points and connections will be lost!").setPositiveButton(
                                     "Confirm", (dialogInterface, i) -> {
                                         try {
                                             Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/delVenue?id=" + item.getId());
