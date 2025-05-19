@@ -46,6 +46,8 @@ public class LocationProvider {
     @RequiresPermission(allOf = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION})
     public void start() {
         locationHistory.clear();
+        distanceToZero = 0;
+        bearingDegreesToZero = 0;
         if (!isTracking) {
             LocationRequest request = LocationRequest.create()
                     .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
@@ -58,8 +60,11 @@ public class LocationProvider {
     }
 
     public void stop() {
-        if (isTracking)
+        if (isTracking) {
             fusedLocationClient.removeLocationUpdates(locationCallback);
+        }
+        distanceToZero = 0;
+        bearingDegreesToZero = 0;
         isTracking = false;
     }
 

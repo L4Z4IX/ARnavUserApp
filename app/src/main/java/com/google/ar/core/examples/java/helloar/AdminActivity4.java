@@ -319,7 +319,11 @@ public class AdminActivity4 extends AppCompatActivity {
                     dialog.show();
                 }
             }, item -> {
-                Toast.makeText(AdminActivity4.this, "Selected " + item.getName(), Toast.LENGTH_SHORT).show();
+                //Point selected
+                Intent intent = new Intent(AdminActivity4.this, MainActivity4.class);
+                intent.putExtra("type", "admin");
+                intent.putExtra("point", (new Gson()).toJson(item, Point.class));
+                startActivity(intent);
             });
             pointList.setAdapter(adapter);
 

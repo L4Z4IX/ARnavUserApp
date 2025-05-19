@@ -86,6 +86,7 @@ public class MainActivity3 extends AppCompatActivity {
         Intent intent = new Intent(MainActivity3.this, MainActivity4.class);
         intent.putExtra("pointId", ((Point) adapter.getItemAtPosition(position)).getId() + "");
         intent.putExtra("venueId", venueId);
+        intent.putExtra("type", "nav");
         startActivity(intent);
     }
 }
