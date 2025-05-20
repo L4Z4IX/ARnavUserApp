@@ -66,6 +66,7 @@ public class MainActivity4 extends AppCompatActivity {
     TextView distOfPoints;
     TextView worldPos;
     TextView constRot;
+    TextView camRot;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +83,7 @@ public class MainActivity4 extends AppCompatActivity {
         distOfPoints = findViewById(R.id.pointDist);
         worldPos = findViewById(R.id.worldPos);
         constRot = findViewById(R.id.constRot);
+        camRot = findViewById(R.id.camRot);
 
 
         rotationProvider = new RotationProvider(this);
@@ -121,7 +123,7 @@ public class MainActivity4 extends AppCompatActivity {
 //        double bearing = 300;
         distOfPoints.setText(distance + "");
         bearingOfPoints.setText(bearing + "");
-        float worldRotation = (float) Math.toRadians((getAVGDegreesFakeToReal() + bearing + 360) % 360);
+        float worldRotation = (float) Math.toRadians((bearing - getAVGDegreesFakeToReal() + 360) % 360);
         //double calculatedRotationRad = Math.toRadians((Math.toDegrees(angleCorrection - angleRadians) + 360) % 360);
         System.out.println("bearing: " + bearing
                 + " Constant rotation: " + getAVGDegreesFakeToReal()
@@ -130,7 +132,7 @@ public class MainActivity4 extends AppCompatActivity {
 
         float dx = (float) (distance * Math.sin(worldRotation));
         float dy = 0; //(float) (currentLocation.getAltitude() - placementLocation.getAltitude());
-        float dz = (float) (distance * Math.cos(worldRotation));
+        float dz = (float) (-distance * Math.cos(worldRotation));
 
         try {
             Pose targetPose = Pose.makeTranslation(dx, dy, dz);
@@ -215,7 +217,8 @@ public class MainActivity4 extends AppCompatActivity {
                 Vector3 curLocation = arFragment.getArSceneView().getScene().getCamera().getWorldPosition();
                 curLocation.y = 0;
                 float az = rotationProvider.getAzimuth();
-                addFakeToRealHistory(az - getDegreesToFakeNorth());
+                double degToFakeN = getDegreesToFakeNorth();
+                addFakeToRealHistory(az - degToFakeN);
                 double dist = curLocation.length();
                 double worldBearing = (360 + Math.toDegrees(Math.atan2(curLocation.x, -curLocation.z))) % 360;
                 System.out.println("worldPos: " + curLocation);
@@ -229,6 +232,7 @@ public class MainActivity4 extends AppCompatActivity {
                     constRot.setText(FakeToReal + "");
                     worldBear.setText(worldBearing + "");
                     worldPos.setText(curLocation.toString());
+                    camRot.setText(degToFakeN + "");
                 });
             }
         }, 1000, 1000);
