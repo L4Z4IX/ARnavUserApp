@@ -62,7 +62,7 @@ public class AdminActivity extends AppCompatActivity {
                     Toast.makeText(AdminActivity.this, "Invalid creditentials", Toast.LENGTH_SHORT).show();
                 } else {
                     String[] data = HttpConnectionHandler.INSTANCE.getResponseString(
-                            HttpConnectionHandler.INSTANCE.newRequest(url + "/hello")
+                            HttpConnectionHandler.INSTANCE.newRequest(url + "/data/hello")
                     ).split(";");
                     Intent intent = new Intent(AdminActivity.this, AdminActivity2.class);
                     intent.putExtra("url", url);
