@@ -21,7 +21,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.google.ar.core.examples.java.common.dto.PointDTO;
+import com.google.ar.core.examples.java.common.dto.PointDTOs;
 import com.google.ar.core.examples.java.common.entityModel.Level;
 import com.google.ar.core.examples.java.common.entityModel.Point;
 import com.google.ar.core.examples.java.common.entityModel.Storage;
@@ -39,8 +39,6 @@ import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import okhttp3.MediaType;
-import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class AdminActivity4 extends AppCompatActivity {
@@ -140,11 +138,12 @@ public class AdminActivity4 extends AppCompatActivity {
                     .setPositiveButton("Add", (dialogInterface, i) -> {
 
                         String name = inputName.getText().toString();
-                        String latitude = inputlatitude.getText().toString();
-                        String longitude = inputlongitude.getText().toString();
-                        String altitude = inputAltitude.getText().toString();
+                        Double latitude = Double.parseDouble(inputlatitude.getText().toString());
+                        Double longitude = Double.parseDouble(inputlongitude.getText().toString());
+                        Double altitude = Double.parseDouble(inputAltitude.getText().toString());
                         try {
-                            Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/addPoint?x=" + latitude + "&y=" + longitude + "&z=" + altitude + "&name=" + name + "&levelId=" + selectedLevel[0].getId());
+                            PointDTOs.addPointDTO addPointDTO = new PointDTOs.addPointDTO(latitude, longitude, altitude, name, selectedLevel[0].getId());
+                            Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/addPoint", addPointDTO);
                             if (resp.isSuccessful()) {
                                 Toast.makeText(AdminActivity4.this, resp.body().string(), Toast.LENGTH_SHORT).show();
                                 refreshData();
@@ -271,14 +270,9 @@ public class AdminActivity4 extends AppCompatActivity {
                                         Double.parseDouble(inputAltitude.getText().toString())
                                 );
 
-                                PointDTO pointDTO = new PointDTO(newpoint, selectedLevel[0].getId());
                                 try {
-                                    RequestBody requestBody = RequestBody.create(
-                                            MediaType.get("application/json; charset=utf-8"),
-                                            (new Gson()).toJson(pointDTO)
-                                    );
-                                    System.out.println((new Gson()).toJson(pointDTO));
-                                    Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/updatePoint", requestBody);
+                                    PointDTOs.editPointDTO editPointDTO = new PointDTOs.editPointDTO(newpoint, selectedLevel[0].getId());
+                                    Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/updatePoint", editPointDTO);
                                     if (resp.isSuccessful()) {
                                         Toast.makeText(AdminActivity4.this, resp.body().string(), Toast.LENGTH_SHORT).show();
                                         refreshData();
@@ -303,7 +297,8 @@ public class AdminActivity4 extends AppCompatActivity {
                     AlertDialog dialog = new AlertDialog.Builder(AdminActivity4.this).setTitle("Confirmation").setMessage("Confirm the removal of " + item.getName() + " point").setPositiveButton(
                                     "Confirm", (dialogInterface, i) -> {
                                         try {
-                                            Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/delPoint?id=" + item.getId());
+                                            PointDTOs.deletePointDTO deletePointDTO = new PointDTOs.deletePointDTO(item.getId());
+                                            Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/delPoint", deletePointDTO);
                                             if (resp.isSuccessful()) {
                                                 Toast.makeText(AdminActivity4.this, resp.body().string(), Toast.LENGTH_SHORT).show();
                                                 refreshData();

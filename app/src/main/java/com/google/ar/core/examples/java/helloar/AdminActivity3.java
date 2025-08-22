@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.google.ar.core.examples.java.common.dto.LevelDTOs;
 import com.google.ar.core.examples.java.common.entityModel.Level;
 import com.google.ar.core.examples.java.common.entityModel.Storage;
 import com.google.ar.core.examples.java.common.entityModel.Venue;
@@ -67,7 +68,8 @@ public class AdminActivity3 extends AppCompatActivity {
                     .setPositiveButton("Add", (dialogInterface, i) -> {
                         String name = inputName.getText().toString();
                         try {
-                            Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/addLevel?levelName=" + name + "&venueId=" + venue.getId());
+                            LevelDTOs.addLevelDTO addLevelDTO = new LevelDTOs.addLevelDTO(name, venue.getId());
+                            Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/addLevel", addLevelDTO);
                             if (resp.isSuccessful()) {
                                 Toast.makeText(AdminActivity3.this, resp.body().string(), Toast.LENGTH_SHORT).show();
                                 refreshData();
@@ -113,7 +115,8 @@ public class AdminActivity3 extends AppCompatActivity {
                             .setPositiveButton("Edit", (dialogInterface, i) -> {
                                 String name = inputName.getText().toString();
                                 try {
-                                    Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/setLevelName?id=" + item.getId() + "&levelName=" + name);
+                                    LevelDTOs.setLevelNameDTO setLevelNameDTO = new LevelDTOs.setLevelNameDTO(name, item.getId());
+                                    Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/setLevelName", setLevelNameDTO);
                                     if (resp.isSuccessful()) {
                                         Toast.makeText(AdminActivity3.this, resp.body().string(), Toast.LENGTH_SHORT).show();
                                         refreshData();
@@ -135,7 +138,8 @@ public class AdminActivity3 extends AppCompatActivity {
                     AlertDialog dialog = new AlertDialog.Builder(AdminActivity3.this).setTitle("Confirmation").setMessage("Confirm the removal of " + item.getName() + " level. Warning: All corespondent points and connections will be lost!").setPositiveButton(
                                     "Confirm", (dialogInterface, i) -> {
                                         try {
-                                            Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/delLevel?levelId=" + item.getId());
+                                            LevelDTOs.delLevelDTO delLevelDTO = new LevelDTOs.delLevelDTO(item.getId());
+                                            Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/delLevel", delLevelDTO);
                                             if (resp.isSuccessful()) {
                                                 Toast.makeText(AdminActivity3.this, resp.body().string(), Toast.LENGTH_SHORT).show();
                                                 refreshData();

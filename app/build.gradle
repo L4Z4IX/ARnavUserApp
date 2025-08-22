@@ -70,6 +70,8 @@ dependencies {
     implementation libs.core
     implementation libs.assets
     implementation libs.play.services.location
+
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.19.2'
 }
 apply plugin: 'com.google.ar.sceneform.plugin'
 

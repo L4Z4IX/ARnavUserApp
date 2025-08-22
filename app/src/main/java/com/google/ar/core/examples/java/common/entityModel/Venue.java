@@ -8,17 +8,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Venue {
-    private final Integer id;
+    private final Long id;
     private final String name;
     public static final TypeToken<List<Venue>> LIST_TYPE_TOKEN = new TypeToken<List<Venue>>() {
     };
 
-    public Venue(Integer id, String name, ArrayList<Level> levelSet) {
+    public Venue(Long id, String name, ArrayList<Level> levelSet) {
         this.id = id;
         this.name = name;
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 

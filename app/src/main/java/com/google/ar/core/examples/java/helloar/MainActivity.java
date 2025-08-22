@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
             if (!inputText.isEmpty()) {
                 Response resp = null;
                 try {
-                    resp = HttpConnectionHandler.INSTANCE.newRequest("http://" + inputText + "/hello");
+                    resp = HttpConnectionHandler.INSTANCE.newRequest("http://" + inputText + "/data/hello");
                 } catch (Exception e) {
                     e.printStackTrace();
                     Toast.makeText(MainActivity.this, "Invalid address", Toast.LENGTH_SHORT).show();

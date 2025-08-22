@@ -6,18 +6,16 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.ar.core.examples.java.common.httpConnection.HttpConnectionHandler;
 
 import java.io.IOException;
 
-import okhttp3.MediaType;
+import okhttp3.FormBody;
+import okhttp3.Headers;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import okio.BufferedSink;
 
 public class AdminActivity extends AppCompatActivity {
     Button backButton, loginButton;
@@ -43,23 +41,17 @@ public class AdminActivity extends AppCompatActivity {
 
     private void onLogin() {
         try {
-            RequestBody requestBody = new RequestBody() {
-                @Nullable
-                @Override
-                public MediaType contentType() {
-                    return null;
-                }
-
-                @Override
-                public void writeTo(@NonNull BufferedSink bufferedSink) throws IOException {
-
-                }
-            };
             String url = "http://" + address.getText().toString();
-            try (Response response = HttpConnectionHandler.INSTANCE.doPost(
-                    url + "/login?username=" + name.getText().toString() + "&password=" + pass.getText().toString())) {
+            Headers headers = new Headers.Builder()
+                    .add("Content-Type", "application/x-www-form-urlencoded")
+                    .build();
+            RequestBody requestBody = new FormBody.Builder()
+                    .add("username", name.getText().toString().trim())
+                    .add("password", pass.getText().toString().trim())
+                    .build();
+            try (Response response = HttpConnectionHandler.INSTANCE.doPost(url + "/login", headers, requestBody)) {
                 if (!response.isSuccessful()) {
-                    Toast.makeText(AdminActivity.this, "Invalid creditentials", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AdminActivity.this, response.code() + ": Invalid creditentials", Toast.LENGTH_SHORT).show();
                 } else {
                     String[] data = HttpConnectionHandler.INSTANCE.getResponseString(
                             HttpConnectionHandler.INSTANCE.newRequest(url + "/data/hello")

@@ -16,6 +16,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.ar.core.examples.java.common.dto.VenueDTOs;
 import com.google.ar.core.examples.java.common.entityModel.Storage;
 import com.google.ar.core.examples.java.common.entityModel.Venue;
 import com.google.ar.core.examples.java.common.httpConnection.HttpConnectionHandler;
@@ -28,13 +30,16 @@ import java.io.IOException;
 
 import okhttp3.Response;
 
+
 public class AdminActivity2 extends AppCompatActivity {
     String url;
     RecyclerView venueList;
     SwipeRefreshLayout swipeRefreshLayout;
+    ObjectMapper mapper;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        mapper = new ObjectMapper();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin2);
 
@@ -64,7 +69,8 @@ public class AdminActivity2 extends AppCompatActivity {
                     .setPositiveButton("Add", (dialogInterface, i) -> {
                         String name = inputName.getText().toString();
                         try {
-                            Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/addVenue?venueName=" + name);
+                            VenueDTOs.addVenueDTO addVenueDTO = new VenueDTOs.addVenueDTO(name);
+                            Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/addVenue", addVenueDTO);
                             if (resp.isSuccessful()) {
                                 Toast.makeText(AdminActivity2.this, resp.body().string(), Toast.LENGTH_SHORT).show();
                                 refreshData();
@@ -110,7 +116,8 @@ public class AdminActivity2 extends AppCompatActivity {
                             .setPositiveButton("Edit", (dialogInterface, i) -> {
                                 String name = inputName.getText().toString();
                                 try {
-                                    Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/setVenueName?id=" + item.getId() + "&name=" + name);
+                                    VenueDTOs.setVenueNameDTO setVenueNameDTO = new VenueDTOs.setVenueNameDTO(item.getId(), name);
+                                    Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/setVenueName", setVenueNameDTO);
                                     if (resp.isSuccessful()) {
                                         Toast.makeText(AdminActivity2.this, resp.body().string(), Toast.LENGTH_SHORT).show();
                                         refreshData();
@@ -132,7 +139,8 @@ public class AdminActivity2 extends AppCompatActivity {
                     AlertDialog dialog = new AlertDialog.Builder(AdminActivity2.this).setTitle("Confirmation").setMessage("Confirm the removal of " + item.getName() + " venue. Warning: all corespondent levels, points and connections will be lost!").setPositiveButton(
                                     "Confirm", (dialogInterface, i) -> {
                                         try {
-                                            Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/delVenue?id=" + item.getId());
+                                            VenueDTOs.delVenueDTO delVenueDTO = new VenueDTOs.delVenueDTO(item.getId());
+                                            Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/delVenue", delVenueDTO);
                                             if (resp.isSuccessful()) {
                                                 Toast.makeText(AdminActivity2.this, resp.body().string(), Toast.LENGTH_SHORT).show();
                                                 refreshData();

@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.google.ar.core.examples.java.common.dto.ConnectionDTOs;
 import com.google.ar.core.examples.java.common.entityModel.Connection;
 import com.google.ar.core.examples.java.common.entityModel.Level;
 import com.google.ar.core.examples.java.common.entityModel.Point;
@@ -69,9 +70,11 @@ public class AdminActivity5 extends AppCompatActivity {
                 Response res;
                 try {
                     if (state) {
-                        res = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/addConnection?id1=" + point.getId() + "&id2=" + item.getId());
+                        ConnectionDTOs.addConnectionDTO addConnectionDTO = new ConnectionDTOs.addConnectionDTO(point.getId(), item.getId());
+                        res = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/addConnection", addConnectionDTO);
                     } else {
-                        res = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/delConnection?pointId1=" + point.getId() + "&pointId2=" + item.getId());
+                        ConnectionDTOs.delConnectionDTO delConnectionDTO = new ConnectionDTOs.delConnectionDTO(point.getId(), item.getId());
+                        res = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/delConnection", delConnectionDTO);
                     }
                     if (res.isSuccessful()) {
                         Toast.makeText(AdminActivity5.this, res.body().string(), Toast.LENGTH_SHORT).show();
