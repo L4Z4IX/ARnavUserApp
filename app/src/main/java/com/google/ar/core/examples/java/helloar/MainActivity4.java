@@ -3,9 +3,11 @@ package com.google.ar.core.examples.java.helloar;
 import android.annotation.SuppressLint;
 import android.location.Location;
 import android.os.Bundle;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.google.ar.core.Anchor;
 import com.google.ar.core.ArCoreApk;
@@ -67,6 +69,8 @@ public class MainActivity4 extends AppCompatActivity {
     TextView worldPos;
     TextView constRot;
     TextView camRot;
+    Switch debugToggle;
+    ConstraintLayout debugContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,12 +88,18 @@ public class MainActivity4 extends AppCompatActivity {
         worldPos = findViewById(R.id.worldPos);
         constRot = findViewById(R.id.constRot);
         camRot = findViewById(R.id.camRot);
+        debugToggle = findViewById(R.id.debugtoggle);
+        debugContainer = findViewById(R.id.debugContainer);
 
 
         rotationProvider = new RotationProvider(this);
         placementLocation.setAltitude(256.8999938964844);
         placementLocation.setLatitude(46.07773314317652);
         placementLocation.setLongitude(18.286210482154498);
+
+        debugToggle.setOnCheckedChangeListener(((buttonView, isChecked) -> {
+            debugContainer.setVisibility(isChecked ? ConstraintLayout.VISIBLE : ConstraintLayout.GONE);
+        }));
 
         ModelRenderable.builder()
                 .setSource(this, R.raw.pawn).build().thenAccept(r -> renderable = r);
