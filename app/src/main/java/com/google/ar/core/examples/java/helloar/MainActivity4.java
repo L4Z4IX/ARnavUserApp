@@ -71,6 +71,7 @@ public class MainActivity4 extends AppCompatActivity {
     TextView camRot;
     Switch debugToggle;
     ConstraintLayout debugContainer;
+    TextView targetPoint;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +91,7 @@ public class MainActivity4 extends AppCompatActivity {
         camRot = findViewById(R.id.camRot);
         debugToggle = findViewById(R.id.debugtoggle);
         debugContainer = findViewById(R.id.debugContainer);
+        targetPoint = findViewById(R.id.targetPoint);
 
 
         rotationProvider = new RotationProvider(this);
@@ -116,6 +118,7 @@ public class MainActivity4 extends AppCompatActivity {
             placementLocation.setLongitude(point.getLongitude());
             pointLng.setText(placementLocation.getLongitude() + "");
             pointLat.setText(placementLocation.getLatitude() + "");
+            targetPoint.setText(point.getName());
         }
     }
 
