@@ -2,6 +2,8 @@ package com.google.ar.core.examples.java.helloar;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -44,16 +46,45 @@ public class MainActivity3 extends AppCompatActivity {
         backButton.setOnClickListener(v -> {
             finish();
         });
+        searchBar.getEditText()
+                .addTextChangedListener(new TextWatcher() {
+                                            @Override
+                                            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                                            }
+
+                                            @Override
+                                            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                                                populateList(s);
+                                            }
+
+                                            @Override
+                                            public void afterTextChanged(Editable s) {
+
+                                            }
+                                        }
+                );
         String url = getIntent().getStringExtra("url");
         venueId = getIntent().getStringExtra("venueId");
         ((TextView) findViewById(R.id.textView3)).setText(Storage.INSTANCE.getVenues().get(Integer.parseInt(venueId)).getName());
-        swipeRefreshLayout.setOnRefreshListener(() -> populateList(url, venueId, swipeRefreshLayout));
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            searchBar.getEditText().setText("");
+            getData(url, venueId);
+        });
 
-
-        populateList(url, venueId, swipeRefreshLayout);
+        getData(url, venueId);
     }
 
-    private void populateList(String url, String venueIndex, SwipeRefreshLayout swipeRefreshLayout) {
+    private void populateList(CharSequence filter) {
+        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,
+                Storage.INSTANCE.getLevels().stream()
+                        .flatMap(x -> x.getPoints().stream().filter(y -> y.getName().contains(filter))).toList());
+        pointList.setAdapter(adapter);
+        pointList.setOnItemClickListener((adapter, v, position, id) -> itemSelected((AdapterView<ArrayAdapter<Point>>) adapter, position));
+        swipeRefreshLayout.setRefreshing(false);
+    }
+
+    private void getData(String url, String venueIndex) {
         try {
             Response r = HttpConnectionHandler.INSTANCE.newRequest("http://" + url + "/data/venuedata/" + Storage.INSTANCE.getVenues().get(Integer.parseInt(venueIndex)).getId());
             if (!r.isSuccessful()) {
@@ -65,24 +96,16 @@ public class MainActivity3 extends AppCompatActivity {
                 throw new IOException();
             }
             Storage.INSTANCE.setConnections(HttpConnectionHandler.INSTANCE.getResponseFromJson(r2, Connection.LIST_TYPE_TOKEN));
-
-            adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,
-                    Storage.INSTANCE.getLevels().stream()
-                            .flatMap(x -> x.getPoints().stream()).toList());
-            pointList.setAdapter(adapter);
-            pointList.setOnItemClickListener((adapter, v, position, id) -> itemSelected((AdapterView<ArrayAdapter<Point>>) adapter, position));
             Toast.makeText(MainActivity3.this, "Points loaded", Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
             Toast.makeText(MainActivity3.this, "Something went wrong", Toast.LENGTH_SHORT).show();
             System.err.println("Error on points load:");
             e.printStackTrace();
         }
-        swipeRefreshLayout.setRefreshing(false);
-
+        populateList("");
     }
 
     private void itemSelected(AdapterView<ArrayAdapter<Point>> adapter, int position) {
-        Toast.makeText(MainActivity3.this, "You clicked on " + ((Point) adapter.getItemAtPosition(position)).getName(), Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(MainActivity3.this, MainActivity4.class);
         intent.putExtra("pointId", ((Point) adapter.getItemAtPosition(position)).getId() + "");
         intent.putExtra("venueId", venueId);
