@@ -3,6 +3,10 @@ package com.google.ar.core.examples.java.helloar;
 import android.annotation.SuppressLint;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -17,6 +21,8 @@ import com.google.ar.core.examples.java.common.entityModel.Point;
 import com.google.ar.core.examples.java.common.navigation.LocationProvider;
 import com.google.ar.core.examples.java.common.navigation.RotationProvider;
 import com.google.ar.sceneform.AnchorNode;
+import com.google.ar.sceneform.Camera;
+import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.Material;
 import com.google.ar.sceneform.rendering.ModelRenderable;
@@ -72,6 +78,7 @@ public class MainActivity4 extends AppCompatActivity {
     Switch debugToggle;
     ConstraintLayout debugContainer;
     TextView targetPoint;
+    ImageView arrowView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,6 +99,10 @@ public class MainActivity4 extends AppCompatActivity {
         debugToggle = findViewById(R.id.debugtoggle);
         debugContainer = findViewById(R.id.debugContainer);
         targetPoint = findViewById(R.id.targetPoint);
+        arrowView = findViewById(R.id.arrowView);
+        arrowView.setScaleX(2f);
+        arrowView.setScaleY(2f);
+        arrowView.setVisibility(ImageView.GONE);
 
 
         rotationProvider = new RotationProvider(this);
@@ -119,7 +130,56 @@ public class MainActivity4 extends AppCompatActivity {
             pointLng.setText(placementLocation.getLongitude() + "");
             pointLat.setText(placementLocation.getLatitude() + "");
             targetPoint.setText(point.getName());
+        } else {
+
         }
+
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (arFragment.getArSceneView() != null && arFragment.getArSceneView().getScene() != null) {
+                    arFragment.getArSceneView().getScene().addOnUpdateListener(frameTime -> updateArrow());
+                } else {
+                    handler.postDelayed(this, 100);
+                }
+            }
+        }, 100);
+//        arFragment.getArSceneView().getScene().addOnUpdateListener(frameTime -> {
+//            if (arFragment.getArSceneView() == null || arFragment.getArSceneView().getScene() == null)
+//                return;
+//
+//            if (currentAnchorNode == null)
+//                return;
+//            updateArrow();
+//        });
+    }
+
+    private void updateArrow() {
+        if (arFragment == null || arFragment.getArSceneView() == null || currentAnchorNode == null)
+            return;
+        if (arrowView.getVisibility() == View.GONE && currentAnchorNode != null)
+            arrowView.setVisibility(View.VISIBLE);
+
+        Camera camera = arFragment.getArSceneView().getScene().getCamera();
+        Vector3 cameraPos = camera.getWorldPosition();
+        Quaternion cameraRot = camera.getWorldRotation();
+        Vector3 targetPos = currentAnchorNode.getWorldPosition();
+
+        Vector3 dirToTarget = Vector3.subtract(targetPos, cameraPos);
+        dirToTarget = new Vector3(dirToTarget.x, 0, dirToTarget.z).normalized();
+
+        Vector3 camForward = Quaternion.rotateVector(cameraRot, Vector3.forward());
+        camForward = new Vector3(camForward.x, 0, camForward.z).normalized();
+
+        float angleRad = (float) Math.atan2(
+                dirToTarget.x * camForward.z - dirToTarget.z * camForward.x,
+                Vector3.dot(camForward, dirToTarget)
+        );
+        float angleDeg = (float) Math.toDegrees(angleRad);
+
+        // Negative as android uses -Z for forward
+        arrowView.setRotation(-angleDeg);
     }
 
     private double getDegreesToFakeNorth() {
