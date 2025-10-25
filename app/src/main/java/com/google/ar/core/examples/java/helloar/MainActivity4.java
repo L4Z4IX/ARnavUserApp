@@ -14,9 +14,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.google.ar.core.Anchor;
-import com.google.ar.core.ArCoreApk;
 import com.google.ar.core.Config;
 import com.google.ar.core.Pose;
+import com.google.ar.core.TrackingState;
 import com.google.ar.core.examples.java.common.entityModel.Point;
 import com.google.ar.core.examples.java.common.navigation.LocationProvider;
 import com.google.ar.core.examples.java.common.navigation.RotationProvider;
@@ -79,6 +79,9 @@ public class MainActivity4 extends AppCompatActivity {
     ConstraintLayout debugContainer;
     TextView targetPoint;
     ImageView arrowView;
+    ConstraintLayout GPSState;
+    ArrayList<Point> navigationPoints;
+    int currentPointIndex = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,7 +103,7 @@ public class MainActivity4 extends AppCompatActivity {
         debugContainer = findViewById(R.id.debugContainer);
         targetPoint = findViewById(R.id.targetPoint);
         arrowView = findViewById(R.id.arrowView);
-        arrowView.setVisibility(ImageView.GONE);
+        GPSState = findViewById(R.id.GPSState);
 
 
         rotationProvider = new RotationProvider(this);
@@ -121,6 +124,7 @@ public class MainActivity4 extends AppCompatActivity {
         //pointId = Integer.parseInt(getIntent().getStringExtra("pointId"));
         String type = getIntent().getStringExtra("type");
         if (type.equals("admin")) {
+            //admin just sees the selected point
             Point point = (new Gson()).fromJson(getIntent().getStringExtra("point"), Point.class);
             placementLocation.setAltitude(point.getAltitude());
             placementLocation.setLatitude(point.getLatitude());
@@ -129,6 +133,10 @@ public class MainActivity4 extends AppCompatActivity {
             pointLat.setText(placementLocation.getLatitude() + "");
             targetPoint.setText(point.getName());
         } else {
+            //user should start navigating using dijkstra's algorithm
+            if (currentLocation.getAccuracy() < 3f) {
+                //start
+            }
 
         }
 
@@ -138,19 +146,48 @@ public class MainActivity4 extends AppCompatActivity {
             public void run() {
                 if (arFragment.getArSceneView() != null && arFragment.getArSceneView().getScene() != null) {
                     arFragment.getArSceneView().getScene().addOnUpdateListener(frameTime -> updateArrow());
+                    setupGPS();
                 } else {
                     handler.postDelayed(this, 100);
                 }
             }
         }, 100);
-//        arFragment.getArSceneView().getScene().addOnUpdateListener(frameTime -> {
-//            if (arFragment.getArSceneView() == null || arFragment.getArSceneView().getScene() == null)
-//                return;
-//
-//            if (currentAnchorNode == null)
-//                return;
-//            updateArrow();
-//        });
+    }
+
+    private void setupGPS() {
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                var cam = arFragment.getArSceneView().getArFrame().getCamera();
+                if (cam.getTrackingState() == TrackingState.TRACKING) {
+                    GPSState.setVisibility(View.VISIBLE);
+                    handleGPSAcc();
+                } else
+                    handler.postDelayed(this, 100);
+            }
+        }, 100);
+
+
+    }
+
+    private void handleGPSAcc() {
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (currentLocation != null && currentLocation.getAccuracy() < 3) {
+                    GPSState.setVisibility(View.GONE);
+                } else {
+                    if (currentLocation != null) {
+                        TextView accArea = GPSState.findViewById(R.id.gpsAcc);
+                        accArea.setText(currentLocation.getAccuracy() + " meters");
+                    }
+                    handler.postDelayed(this, 500);
+                }
+            }
+        }, 100);
+
     }
 
     private void updateArrow() {
@@ -254,17 +291,12 @@ public class MainActivity4 extends AppCompatActivity {
     @Override
     public void onResume() {
 
-
-        ArCoreApk.Availability availability = ArCoreApk.getInstance().checkAvailability(this);
-
         arFragment.onResume();
         Config conf = arFragment.getArSceneView().getSession().getConfig();
         conf.setFocusMode(Config.FocusMode.AUTO);
         conf.setDepthMode(Config.DepthMode.AUTOMATIC);
         conf.setInstantPlacementMode(Config.InstantPlacementMode.LOCAL_Y_UP);
         arFragment.getArSceneView().getSession().configure(conf);
-        //PointManager pointManager = new PointManager(Storage.INSTANCE.getLevels().stream().flatMap(x -> x.getPoints().stream()).filter(x -> x.getId() == pointId).findFirst().get());
-        //pointManager.pointManagerCallback(new Location("ASD"));
         super.onResume();
         //Timer Scheduler for object placement
         rotationProvider.start();
@@ -292,11 +324,11 @@ public class MainActivity4 extends AppCompatActivity {
                 addFakeToRealHistory(az - degToFakeN);
                 double dist = curLocation.length();
                 double worldBearing = (360 + Math.toDegrees(Math.atan2(curLocation.x, -curLocation.z))) % 360;
-                System.out.println("worldPos: " + curLocation);
-                System.out.println("WORLDBEARING: " + worldBearing);
+                //System.out.println("worldPos: " + curLocation);
+                //System.out.println("WORLDBEARING: " + worldBearing);
                 double FakeToReal = getAVGDegreesFakeToReal();
                 double bearing = (540 + (worldBearing - FakeToReal)) % 360;
-                System.out.println("Updateing with dist,bearing: " + dist + " " + bearing);
+                //System.out.println("Updateing with dist,bearing: " + dist + " " + bearing);
                 LocationProvider.getInstance(null).updateLocations(dist, bearing);
                 runOnUiThread(() -> {
                     azimuth.setText(az + "");
