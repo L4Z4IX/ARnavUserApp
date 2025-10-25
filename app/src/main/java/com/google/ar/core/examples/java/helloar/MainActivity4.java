@@ -100,8 +100,6 @@ public class MainActivity4 extends AppCompatActivity {
         debugContainer = findViewById(R.id.debugContainer);
         targetPoint = findViewById(R.id.targetPoint);
         arrowView = findViewById(R.id.arrowView);
-        arrowView.setScaleX(2f);
-        arrowView.setScaleY(2f);
         arrowView.setVisibility(ImageView.GONE);
 
 
