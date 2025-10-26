@@ -11,10 +11,6 @@ import java.util.Objects;
 import java.util.PriorityQueue;
 
 public class Dijkstra {
-
-    /**
-     * Return points in reversed order
-     */
     public static ArrayList<Point> solve(List<Connection> connections, List<Point> points, Point start, Point end) {
         HashMap<Long, Point> idToPoint = new HashMap<>();
         ArrayList<Point> pointsInOrder = new ArrayList<>();

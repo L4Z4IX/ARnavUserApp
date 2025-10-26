@@ -20,6 +20,7 @@ import com.google.ar.core.examples.java.common.entityModel.Level;
 import com.google.ar.core.examples.java.common.entityModel.Point;
 import com.google.ar.core.examples.java.common.entityModel.Storage;
 import com.google.ar.core.examples.java.common.httpConnection.HttpConnectionHandler;
+import com.google.gson.Gson;
 
 import java.io.IOException;
 
@@ -107,9 +108,9 @@ public class MainActivity3 extends AppCompatActivity {
 
     private void itemSelected(AdapterView<ArrayAdapter<Point>> adapter, int position) {
         Intent intent = new Intent(MainActivity3.this, MainActivity4.class);
-        intent.putExtra("pointId", ((Point) adapter.getItemAtPosition(position)).getId() + "");
+        intent.putExtra("point", (new Gson()).toJson(adapter.getItemAtPosition(position), Point.class));
         intent.putExtra("venueId", venueId);
-        intent.putExtra("type", "nav");
+        intent.putExtra("type", "user");
         startActivity(intent);
     }
 }

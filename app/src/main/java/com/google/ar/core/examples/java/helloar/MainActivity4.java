@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -18,6 +19,8 @@ import com.google.ar.core.Config;
 import com.google.ar.core.Pose;
 import com.google.ar.core.TrackingState;
 import com.google.ar.core.examples.java.common.entityModel.Point;
+import com.google.ar.core.examples.java.common.entityModel.Storage;
+import com.google.ar.core.examples.java.common.helpers.NavigatorHelper;
 import com.google.ar.core.examples.java.common.navigation.LocationProvider;
 import com.google.ar.core.examples.java.common.navigation.RotationProvider;
 import com.google.ar.sceneform.AnchorNode;
@@ -44,8 +47,7 @@ public class MainActivity4 extends AppCompatActivity {
     private volatile Location currentLocation;
     private final Location placementLocation = new Location("manual");
     private ModelRenderable renderable;
-    private int pointId;
-    private final Timer placementTimer = new Timer();
+    private Timer placementTimer;
     private RotationProvider rotationProvider;
     private final List<Double> fakeToRealHistory = Collections.synchronizedList(new ArrayList<>());
 
@@ -80,8 +82,8 @@ public class MainActivity4 extends AppCompatActivity {
     TextView targetPoint;
     ImageView arrowView;
     ConstraintLayout GPSState;
-    ArrayList<Point> navigationPoints;
-    int currentPointIndex = 0;
+    NavigatorHelper navigatorHelper;
+    Point target;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,11 +107,10 @@ public class MainActivity4 extends AppCompatActivity {
         arrowView = findViewById(R.id.arrowView);
         GPSState = findViewById(R.id.GPSState);
 
+        target = (new Gson()).fromJson(getIntent().getStringExtra("point"), Point.class);
+        navigatorHelper = new NavigatorHelper(Storage.INSTANCE.getConnections(), Storage.INSTANCE.getLevels().stream().flatMap(x -> x.getPoints().stream()).toList(), target);
 
         rotationProvider = new RotationProvider(this);
-        placementLocation.setAltitude(256.8999938964844);
-        placementLocation.setLatitude(46.07773314317652);
-        placementLocation.setLongitude(18.286210482154498);
 
         debugToggle.setOnCheckedChangeListener(((buttonView, isChecked) -> {
             debugContainer.setVisibility(isChecked ? ConstraintLayout.VISIBLE : ConstraintLayout.GONE);
@@ -125,19 +126,13 @@ public class MainActivity4 extends AppCompatActivity {
         String type = getIntent().getStringExtra("type");
         if (type.equals("admin")) {
             //admin just sees the selected point
-            Point point = (new Gson()).fromJson(getIntent().getStringExtra("point"), Point.class);
-            placementLocation.setAltitude(point.getAltitude());
-            placementLocation.setLatitude(point.getLatitude());
-            placementLocation.setLongitude(point.getLongitude());
+
+            placementLocation.setAltitude(target.getAltitude());
+            placementLocation.setLatitude(target.getLatitude());
+            placementLocation.setLongitude(target.getLongitude());
             pointLng.setText(placementLocation.getLongitude() + "");
             pointLat.setText(placementLocation.getLatitude() + "");
-            targetPoint.setText(point.getName());
-        } else {
-            //user should start navigating using dijkstra's algorithm
-            if (currentLocation.getAccuracy() < 3f) {
-                //start
-            }
-
+            targetPoint.setText(target.getName());
         }
 
         Handler handler = new Handler(Looper.getMainLooper());
@@ -178,6 +173,9 @@ public class MainActivity4 extends AppCompatActivity {
             public void run() {
                 if (currentLocation != null && currentLocation.getAccuracy() < 3) {
                     GPSState.setVisibility(View.GONE);
+                    if (!getIntent().getStringExtra("type").equals("admin")) {
+                        startNavigation();
+                    }
                 } else {
                     if (currentLocation != null) {
                         TextView accArea = GPSState.findViewById(R.id.gpsAcc);
@@ -188,6 +186,29 @@ public class MainActivity4 extends AppCompatActivity {
             }
         }, 100);
 
+    }
+
+    private void startNavigation() {
+        navigatorHelper.startNavigation(currentLocation);
+        placementTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                Vector3 cameraPos = arFragment.getArSceneView().getScene().getCamera().getWorldPosition();
+                Vector3 objectPose = currentAnchorNode.getWorldPosition();
+                Point p = navigatorHelper.getCurrentPlacementLocation(objectPose, cameraPos);
+                if (p != null) {
+                    placementLocation.setAltitude(p.getAltitude());
+                    placementLocation.setLongitude(p.getLongitude());
+                    placementLocation.setLatitude(p.getLatitude());
+                    runOnUiThread(() -> targetPoint.setText(p.getName()));
+                } else {
+                    //TODO do something at end of nav
+                    runOnUiThread(() -> Toast.makeText(MainActivity4.this, "END", Toast.LENGTH_SHORT).show());
+                    this.cancel();
+                }
+
+            }
+        }, 1000, 1000);
     }
 
     private void updateArrow() {
@@ -290,7 +311,8 @@ public class MainActivity4 extends AppCompatActivity {
     @SuppressLint("MissingPermission")
     @Override
     public void onResume() {
-
+        placementTimer = new Timer();
+        fakeToRealHistory.clear();
         arFragment.onResume();
         Config conf = arFragment.getArSceneView().getSession().getConfig();
         conf.setFocusMode(Config.FocusMode.AUTO);
@@ -298,6 +320,7 @@ public class MainActivity4 extends AppCompatActivity {
         conf.setInstantPlacementMode(Config.InstantPlacementMode.LOCAL_Y_UP);
         arFragment.getArSceneView().getSession().configure(conf);
         super.onResume();
+        setupGPS();
         //Timer Scheduler for object placement
         rotationProvider.start();
         LocationProvider.getInstance(null).start();
