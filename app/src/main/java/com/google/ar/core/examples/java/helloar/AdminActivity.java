@@ -8,13 +8,11 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.ar.core.examples.java.common.dto.Login;
 import com.google.ar.core.examples.java.common.httpConnection.HttpConnectionHandler;
 
 import java.io.IOException;
 
-import okhttp3.FormBody;
-import okhttp3.Headers;
-import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class AdminActivity extends AppCompatActivity {
@@ -42,14 +40,9 @@ public class AdminActivity extends AppCompatActivity {
     private void onLogin() {
         try {
             String url = "http://" + address.getText().toString();
-            Headers headers = new Headers.Builder()
-                    .add("Content-Type", "application/x-www-form-urlencoded")
-                    .build();
-            RequestBody requestBody = new FormBody.Builder()
-                    .add("username", name.getText().toString().trim())
-                    .add("password", pass.getText().toString().trim())
-                    .build();
-            try (Response response = HttpConnectionHandler.INSTANCE.doPost(url + "/login", headers, requestBody)) {
+            Login login = new Login(name.getText().toString().trim(), pass.getText().toString().trim());
+
+            try (Response response = HttpConnectionHandler.INSTANCE.doPost(url + "/login", login)) {
                 if (!response.isSuccessful()) {
                     Toast.makeText(AdminActivity.this, response.code() + ": Invalid creditentials", Toast.LENGTH_SHORT).show();
                 } else {
