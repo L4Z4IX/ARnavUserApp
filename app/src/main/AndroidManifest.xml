@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.google.ar.core.examples.java.helloar">
+    package="hu.pte.mik.l4z4ix.src.helloar">
 
     <uses-permission android:name="android.permission.CAMERA" /> <!-- Required to post notifications for Android T+ devices -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -28,7 +28,7 @@
         android:required="true" />
 
     <application
-        android:name=".ArApplication"
+        android:name="hu.pte.mik.l4z4ix.src.helloar.ArApplication"
 
         android:allowBackup="false"
         android:icon="@drawable/ic_launcher"
@@ -36,39 +36,39 @@
         android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
-            android:name=".MainActivity4"
+            android:name="hu.pte.mik.l4z4ix.src.helloar.MainActivity4"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name=".MainActivity3"
+            android:name="hu.pte.mik.l4z4ix.src.helloar.MainActivity3"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name=".MainActivity2"
+            android:name="hu.pte.mik.l4z4ix.src.helloar.MainActivity2"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name=".AdminActivity"
+            android:name="hu.pte.mik.l4z4ix.src.helloar.AdminActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name=".AdminActivity2"
+            android:name="hu.pte.mik.l4z4ix.src.helloar.AdminActivity2"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name=".AdminActivity3"
+            android:name="hu.pte.mik.l4z4ix.src.helloar.AdminActivity3"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name=".AdminActivity4"
+            android:name="hu.pte.mik.l4z4ix.src.helloar.AdminActivity4"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name=".AdminActivity5"
+            android:name="hu.pte.mik.l4z4ix.src.helloar.AdminActivity5"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name=".MainActivity"
+            android:name="hu.pte.mik.l4z4ix.src.helloar.MainActivity"
             android:configChanges="orientation|screenSize"
             android:exported="true"
             android:screenOrientation="sensorPortrait"
