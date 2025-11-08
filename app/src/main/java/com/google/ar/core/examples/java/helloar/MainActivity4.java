@@ -140,7 +140,6 @@ public class MainActivity4 extends AppCompatActivity {
             @Override
             public void run() {
                 if (arFragment.getArSceneView() != null && arFragment.getArSceneView().getScene() != null) {
-                    arFragment.getArSceneView().getScene().addOnUpdateListener(frameTime -> updateArrow());
                     setupGPS();
                 } else {
                     handler.postDelayed(this, 100);
@@ -175,6 +174,7 @@ public class MainActivity4 extends AppCompatActivity {
                     GPSState.setVisibility(View.GONE);
                     if (!getIntent().getStringExtra("type").equals("admin")) {
                         startNavigation();
+                        arFragment.getArSceneView().getScene().addOnUpdateListener(frameTime -> updateArrow());
                     }
                 } else {
                     if (currentLocation != null) {
