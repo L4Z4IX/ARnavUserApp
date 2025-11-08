@@ -174,8 +174,8 @@ public class MainActivity4 extends AppCompatActivity {
                     GPSState.setVisibility(View.GONE);
                     if (!getIntent().getStringExtra("type").equals("admin")) {
                         startNavigation();
-                        arFragment.getArSceneView().getScene().addOnUpdateListener(frameTime -> updateArrow());
                     }
+                    arFragment.getArSceneView().getScene().addOnUpdateListener(frameTime -> updateArrow());
                 } else {
                     if (currentLocation != null) {
                         TextView accArea = GPSState.findViewById(R.id.gpsAcc);
