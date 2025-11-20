@@ -17,7 +17,7 @@ apply plugin: 'com.android.application'
 
 
 android {
-    namespace "hu.pte.mik.l4z4ix.src.helloar"
+    namespace "hu.pte.mik.l4z4ix.src.ArApplication"
     compileSdkVersion 35
     defaultConfig {
         applicationId "hu.pte.mik.l4z4ix.java.helloar"

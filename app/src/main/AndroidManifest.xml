@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="hu.pte.mik.l4z4ix.src.helloar">
+    package="hu.pte.mik.l4z4ix.src.ArApplication">
 
-    <uses-permission android:name="android.permission.CAMERA" /> <!-- Required to post notifications for Android T+ devices -->
+    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES" />
@@ -28,7 +28,7 @@
         android:required="true" />
 
     <application
-        android:name="hu.pte.mik.l4z4ix.src.helloar.ArApplication"
+        android:name="hu.pte.mik.l4z4ix.src.ArApplication.ArApplication"
 
         android:allowBackup="false"
         android:icon="@drawable/ic_launcher"
@@ -36,39 +36,39 @@
         android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
-            android:name="hu.pte.mik.l4z4ix.src.helloar.MainActivity4"
+            android:name="hu.pte.mik.l4z4ix.src.ArApplication.MainActivity4"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name="hu.pte.mik.l4z4ix.src.helloar.MainActivity3"
+            android:name="hu.pte.mik.l4z4ix.src.ArApplication.MainActivity3"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name="hu.pte.mik.l4z4ix.src.helloar.MainActivity2"
+            android:name="hu.pte.mik.l4z4ix.src.ArApplication.MainActivity2"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name="hu.pte.mik.l4z4ix.src.helloar.AdminActivity"
+            android:name="hu.pte.mik.l4z4ix.src.ArApplication.AdminActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name="hu.pte.mik.l4z4ix.src.helloar.AdminActivity2"
+            android:name="hu.pte.mik.l4z4ix.src.ArApplication.AdminActivity2"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name="hu.pte.mik.l4z4ix.src.helloar.AdminActivity3"
+            android:name="hu.pte.mik.l4z4ix.src.ArApplication.AdminActivity3"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name="hu.pte.mik.l4z4ix.src.helloar.AdminActivity4"
+            android:name="hu.pte.mik.l4z4ix.src.ArApplication.AdminActivity4"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name="hu.pte.mik.l4z4ix.src.helloar.AdminActivity5"
+            android:name="hu.pte.mik.l4z4ix.src.ArApplication.AdminActivity5"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name="hu.pte.mik.l4z4ix.src.helloar.MainActivity"
+            android:name="hu.pte.mik.l4z4ix.src.ArApplication.MainActivity"
             android:configChanges="orientation|screenSize"
             android:exported="true"
             android:screenOrientation="sensorPortrait"
@@ -80,7 +80,7 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity> <!-- Indicates whether "Google Play Services for AR" (ARCore) is "required" or "optional". -->
+        </activity>
 
 
         <meta-data
