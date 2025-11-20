@@ -267,7 +267,7 @@ public class MainActivity4 extends AppCompatActivity {
 
         float dx = (float) (distance * Math.sin(worldRotation));
         float dy = 0;
-        //form ulti-level implementation, use:
+        //for multi-level implementation, use:
         // (float) (currentLocation.getAltitude() - placementLocation.getAltitude());
         float dz = (float) (-distance * Math.cos(worldRotation));
 
