@@ -1,6 +1,7 @@
 package hu.pte.mik.l4z4ix.src.helloar;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -9,7 +10,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -203,8 +203,14 @@ public class MainActivity4 extends AppCompatActivity {
                     placementLocation.setLatitude(p.getLatitude());
                     runOnUiThread(() -> targetPoint.setText(p.getName()));
                 } else {
-                    //TODO do something at end of nav
-                    runOnUiThread(() -> Toast.makeText(MainActivity4.this, "END", Toast.LENGTH_SHORT).show());
+                    runOnUiThread(() -> {
+                        arFragment.onPause();
+                        new AlertDialog.Builder(MainActivity4.this)
+                                .setTitle("Reached destination")
+                                .setMessage("You have reached your selected destination.")
+                                .setPositiveButton("Finish", (dialog, which) -> MainActivity4.this.finish())
+                                .show();
+                    });
                     this.cancel();
                 }
 
