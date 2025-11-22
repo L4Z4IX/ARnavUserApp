@@ -10,8 +10,11 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.io.IOException;
+
 import hu.pte.mik.l4z4ix.src.Components.helpers.CameraPermissionHelper;
 import hu.pte.mik.l4z4ix.src.Components.helpers.LocationPermissionHelper;
+import hu.pte.mik.l4z4ix.src.Components.httpConnection.DataManager;
 import hu.pte.mik.l4z4ix.src.Components.httpConnection.HttpConnectionHandler;
 import okhttp3.Response;
 
@@ -21,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText editTextInput;
     private Button submitButton;
     private Button adminButton;
+    private final DataManager dataManager = DataManager.getManager();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,33 +47,28 @@ public class MainActivity extends AppCompatActivity {
         submitButton.setOnClickListener(v -> {
             String inputText = editTextInput.getText().toString().trim();
             if (!inputText.isEmpty()) {
-                Response resp = null;
+                dataManager.setUrl(inputText);
+                Response resp;
                 try {
-                    resp = HttpConnectionHandler.INSTANCE.newRequest("http://" + inputText + "/data/hello");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Toast.makeText(MainActivity.this, "Invalid address", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                if (resp == null || !resp.isSuccessful()) {
-                    Toast.makeText(MainActivity.this, "Invalid response from server", Toast.LENGTH_SHORT).show();
+                    resp = dataManager.doHello(inputText);
+                } catch (IOException e) {
+                    Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                     return;
                 }
                 String[] data;
                 try {
-                    data = HttpConnectionHandler.INSTANCE.getResponseString(resp).split(";");
+                    data = HttpConnectionHandler.getInstance().getResponseString(resp).split(";");
                     if (data.length != 3) {
                         Toast.makeText(MainActivity.this, "Address does not use correct configuration", Toast.LENGTH_LONG).show();
+                        System.out.println(data);
+                        throw new RuntimeException();
                     }
                 } catch (Exception e) {
                     return;
                 }
-                // Navigate to SecondActivity
                 Intent intent = new Intent(MainActivity.this, MainActivity2.class);
                 intent.putExtra("editTextInput", data[0].trim());
                 intent.putExtra("motdText", data[2].trim());
-                intent.putExtra("url", inputText);
                 startActivity(intent);
             } else {
                 Toast.makeText(MainActivity.this, "Please enter an address", Toast.LENGTH_SHORT).show();

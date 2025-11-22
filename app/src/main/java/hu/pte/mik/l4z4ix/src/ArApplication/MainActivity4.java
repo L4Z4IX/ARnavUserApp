@@ -130,7 +130,7 @@ public class MainActivity4 extends AppCompatActivity {
         String type = getIntent().getStringExtra("type");
         if (type.equals("admin")) {
             //admin sees only the selected point
-
+            debugToggle.setVisibility(Switch.VISIBLE);
             placementLocation.setAltitude(target.getAltitude());
             placementLocation.setLatitude(target.getLatitude());
             placementLocation.setLongitude(target.getLongitude());

@@ -24,17 +24,16 @@ import hu.pte.mik.l4z4ix.src.Components.dto.LevelDTOs;
 import hu.pte.mik.l4z4ix.src.Components.entityModel.Level;
 import hu.pte.mik.l4z4ix.src.Components.entityModel.Storage;
 import hu.pte.mik.l4z4ix.src.Components.entityModel.Venue;
-import hu.pte.mik.l4z4ix.src.Components.httpConnection.HttpConnectionHandler;
+import hu.pte.mik.l4z4ix.src.Components.httpConnection.DataManager;
 import hu.pte.mik.l4z4ix.src.Components.listHelpers.CustomAdapter;
 import hu.pte.mik.l4z4ix.src.Components.listHelpers.CustomViewHolder;
 import hu.pte.mik.l4z4ix.src.Components.listHelpers.FormHandler;
-import okhttp3.Response;
 
 public class AdminActivity3 extends AppCompatActivity {
-    String url;
-    Venue venue;
-    RecyclerView levelList;
-    SwipeRefreshLayout swipeRefreshLayout;
+    private Venue venue;
+    private RecyclerView levelList;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private final DataManager dataManager = DataManager.getManager();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -50,8 +49,6 @@ public class AdminActivity3 extends AppCompatActivity {
         backButton.setOnClickListener(v -> {
             finish();
         });
-
-        url = getIntent().getStringExtra("url");
         venue = new Gson().fromJson(getIntent().getStringExtra("venue"), Venue.class);
         venueName.setText(venue.getName());
         levelList.setLayoutManager(new LinearLayoutManager(this));
@@ -69,15 +66,10 @@ public class AdminActivity3 extends AppCompatActivity {
                         String name = inputName.getText().toString();
                         try {
                             LevelDTOs.addLevelDTO addLevelDTO = new LevelDTOs.addLevelDTO(name, venue.getId());
-                            Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/addLevel", addLevelDTO);
-                            if (resp.isSuccessful()) {
-                                Toast.makeText(AdminActivity3.this, resp.body().string(), Toast.LENGTH_SHORT).show();
-                                refreshData();
-                            }
-
+                            Toast.makeText(AdminActivity3.this, dataManager.addLevel(addLevelDTO), Toast.LENGTH_SHORT).show();
+                            refreshData();
                         } catch (IOException e) {
-                            e.printStackTrace();
-                            Toast.makeText(AdminActivity3.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(AdminActivity3.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     })
                     .setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss())
@@ -94,11 +86,7 @@ public class AdminActivity3 extends AppCompatActivity {
         swipeRefreshLayout.setRefreshing(true);
         Storage.INSTANCE.clearInstance();
         try {
-            Response r = HttpConnectionHandler.INSTANCE.newRequest(url + "/data/venuedata/" + venue.getId());
-            if (!r.isSuccessful()) {
-                throw new IOException();
-            }
-            Storage.INSTANCE.setLevels(HttpConnectionHandler.INSTANCE.getResponseFromJson(r, Level.LIST_TYPE_TOKEN));
+            dataManager.requestVenueData(venue.getId());
 
             CustomAdapter<Level, CustomViewHolder> adapter = new CustomAdapter<>(R.layout.admin_list_item, Storage.INSTANCE.getLevels(), new FormHandler<>() {
                 @Override
@@ -116,15 +104,10 @@ public class AdminActivity3 extends AppCompatActivity {
                                 String name = inputName.getText().toString();
                                 try {
                                     LevelDTOs.setLevelNameDTO setLevelNameDTO = new LevelDTOs.setLevelNameDTO(name, item.getId());
-                                    Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/setLevelName", setLevelNameDTO);
-                                    if (resp.isSuccessful()) {
-                                        Toast.makeText(AdminActivity3.this, resp.body().string(), Toast.LENGTH_SHORT).show();
-                                        refreshData();
-                                    }
-
+                                    Toast.makeText(AdminActivity3.this, dataManager.updateLevel(setLevelNameDTO), Toast.LENGTH_SHORT).show();
+                                    refreshData();
                                 } catch (IOException e) {
-                                    e.printStackTrace();
-                                    Toast.makeText(AdminActivity3.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(AdminActivity3.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                                 }
                             })
                             .setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss())
@@ -139,13 +122,10 @@ public class AdminActivity3 extends AppCompatActivity {
                                     "Confirm", (dialogInterface, i) -> {
                                         try {
                                             LevelDTOs.delLevelDTO delLevelDTO = new LevelDTOs.delLevelDTO(item.getId());
-                                            Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/delLevel", delLevelDTO);
-                                            if (resp.isSuccessful()) {
-                                                Toast.makeText(AdminActivity3.this, resp.body().string(), Toast.LENGTH_SHORT).show();
-                                                refreshData();
-                                            }
+                                            Toast.makeText(AdminActivity3.this, dataManager.deleteLevel(delLevelDTO), Toast.LENGTH_SHORT).show();
+                                            refreshData();
                                         } catch (IOException e) {
-                                            Toast.makeText(AdminActivity3.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(AdminActivity3.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                                         }
                                     }
                             ).setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss())
@@ -156,7 +136,6 @@ public class AdminActivity3 extends AppCompatActivity {
                 Intent intent = new Intent(AdminActivity3.this, AdminActivity4.class);
                 intent.putExtra("levelId", item.getId() + "");
                 intent.putExtra("venue", new Gson().toJson(venue));
-                intent.putExtra("url", url);
                 startActivity(intent);
             }, CustomViewHolder.class);
             levelList.setAdapter(adapter);

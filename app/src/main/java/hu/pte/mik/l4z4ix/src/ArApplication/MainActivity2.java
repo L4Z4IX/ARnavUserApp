@@ -16,14 +16,14 @@ import java.io.IOException;
 
 import hu.pte.mik.l4z4ix.src.Components.entityModel.Storage;
 import hu.pte.mik.l4z4ix.src.Components.entityModel.Venue;
-import hu.pte.mik.l4z4ix.src.Components.httpConnection.HttpConnectionHandler;
-import okhttp3.Response;
+import hu.pte.mik.l4z4ix.src.Components.httpConnection.DataManager;
 
 
 public class MainActivity2 extends AppCompatActivity {
     String url = "";
     private ListView venueList;
     private ArrayAdapter<Venue> adapter;
+    private final DataManager dataManager = DataManager.getManager();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,16 +39,13 @@ public class MainActivity2 extends AppCompatActivity {
         textView.setText(receivedText);
 
         showMotd(getIntent().getStringExtra("motdText"));
-        url = getIntent().getStringExtra("url");
 
 
         backButton.setOnClickListener(v -> {
             finish();
         });
-        swipeRefreshLayout.setOnRefreshListener(() -> populateList(url, swipeRefreshLayout));
-
-
-        populateList(url, swipeRefreshLayout);
+        swipeRefreshLayout.setOnRefreshListener(() -> populateList(swipeRefreshLayout));
+        populateList(swipeRefreshLayout);
 
     }
 
@@ -61,17 +58,11 @@ public class MainActivity2 extends AppCompatActivity {
                 .show();
     }
 
-    private void populateList(String url, SwipeRefreshLayout swipeRefreshLayout) {
-        Storage.INSTANCE.clearInstance();
+    private void populateList(SwipeRefreshLayout swipeRefreshLayout) {
         try {
-            Response r = HttpConnectionHandler.INSTANCE.newRequest("http://" + url + "/data/venues");
-            if (!r.isSuccessful()) {
-                throw new IOException();
-            }
-            Storage.INSTANCE.setVenues(HttpConnectionHandler.INSTANCE.getResponseFromJson(r, Venue.LIST_TYPE_TOKEN));
-
+            dataManager.requestVenues();
         } catch (IOException e) {
-            Toast.makeText(MainActivity2.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity2.this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, Storage.INSTANCE.getVenues());
         venueList.setAdapter(adapter);
@@ -84,7 +75,6 @@ public class MainActivity2 extends AppCompatActivity {
 
     private void itemSelected(int position) {
         Intent intent = new Intent(MainActivity2.this, MainActivity3.class);
-        intent.putExtra("url", url);
         intent.putExtra("venueId", position + "");
         startActivity(intent);
     }

@@ -19,12 +19,9 @@ import com.google.gson.Gson;
 
 import java.io.IOException;
 
-import hu.pte.mik.l4z4ix.src.Components.entityModel.Connection;
-import hu.pte.mik.l4z4ix.src.Components.entityModel.Level;
 import hu.pte.mik.l4z4ix.src.Components.entityModel.Point;
 import hu.pte.mik.l4z4ix.src.Components.entityModel.Storage;
-import hu.pte.mik.l4z4ix.src.Components.httpConnection.HttpConnectionHandler;
-import okhttp3.Response;
+import hu.pte.mik.l4z4ix.src.Components.httpConnection.DataManager;
 
 public class MainActivity3 extends AppCompatActivity {
     private ArrayAdapter<Point> adapter;
@@ -32,6 +29,7 @@ public class MainActivity3 extends AppCompatActivity {
     private Button backButton;
     private SwipeRefreshLayout swipeRefreshLayout;
     private String venueId;
+    private final DataManager dataManager = DataManager.getManager();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,10 +68,10 @@ public class MainActivity3 extends AppCompatActivity {
         ((TextView) findViewById(R.id.textView3)).setText(Storage.INSTANCE.getVenues().get(Integer.parseInt(venueId)).getName());
         swipeRefreshLayout.setOnRefreshListener(() -> {
             searchBar.getEditText().setText("");
-            getData(url, venueId);
+            getData(venueId);
         });
 
-        getData(url, venueId);
+        getData(venueId);
     }
 
     private void populateList(CharSequence filter) {
@@ -85,23 +83,12 @@ public class MainActivity3 extends AppCompatActivity {
         swipeRefreshLayout.setRefreshing(false);
     }
 
-    private void getData(String url, String venueIndex) {
+    private void getData(String venueIndex) {
         try {
-            Response r = HttpConnectionHandler.INSTANCE.newRequest("http://" + url + "/data/venuedata/" + Storage.INSTANCE.getVenues().get(Integer.parseInt(venueIndex)).getId());
-            if (!r.isSuccessful()) {
-                throw new IOException();
-            }
-            Storage.INSTANCE.setLevels(HttpConnectionHandler.INSTANCE.getResponseFromJson(r, Level.LIST_TYPE_TOKEN));
-            Response r2 = HttpConnectionHandler.INSTANCE.newRequest("http://" + url + "/data/connectionsByVenue?venueId=" + Storage.INSTANCE.getVenues().get(Integer.parseInt(venueIndex)).getId());
-            if (!r2.isSuccessful()) {
-                throw new IOException();
-            }
-            Storage.INSTANCE.setConnections(HttpConnectionHandler.INSTANCE.getResponseFromJson(r2, Connection.LIST_TYPE_TOKEN));
+            dataManager.requestVenueData(Integer.parseInt(venueIndex));
             Toast.makeText(MainActivity3.this, "Points loaded", Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
-            Toast.makeText(MainActivity3.this, "Something went wrong", Toast.LENGTH_SHORT).show();
-            System.err.println("Error on points load:");
-            e.printStackTrace();
+            Toast.makeText(MainActivity3.this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
         populateList("");
     }

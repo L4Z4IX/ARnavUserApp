@@ -16,7 +16,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 
 import java.io.IOException;
@@ -24,22 +23,20 @@ import java.io.IOException;
 import hu.pte.mik.l4z4ix.src.Components.dto.VenueDTOs;
 import hu.pte.mik.l4z4ix.src.Components.entityModel.Storage;
 import hu.pte.mik.l4z4ix.src.Components.entityModel.Venue;
-import hu.pte.mik.l4z4ix.src.Components.httpConnection.HttpConnectionHandler;
+import hu.pte.mik.l4z4ix.src.Components.httpConnection.DataManager;
 import hu.pte.mik.l4z4ix.src.Components.listHelpers.CustomAdapter;
 import hu.pte.mik.l4z4ix.src.Components.listHelpers.CustomViewHolder;
 import hu.pte.mik.l4z4ix.src.Components.listHelpers.FormHandler;
-import okhttp3.Response;
 
 
 public class AdminActivity2 extends AppCompatActivity {
-    String url;
-    RecyclerView venueList;
-    SwipeRefreshLayout swipeRefreshLayout;
-    ObjectMapper mapper;
+    private RecyclerView venueList;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private final DataManager dataManager = DataManager.getManager();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        mapper = new ObjectMapper();
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin2);
 
@@ -54,7 +51,6 @@ public class AdminActivity2 extends AppCompatActivity {
         });
 
         serverName.setText(getIntent().getStringExtra("name").trim());
-        url = getIntent().getStringExtra("url");
         venueList.setLayoutManager(new LinearLayoutManager(this));
         refreshData();
         addButton.setOnClickListener(v -> {
@@ -70,15 +66,10 @@ public class AdminActivity2 extends AppCompatActivity {
                         String name = inputName.getText().toString();
                         try {
                             VenueDTOs.addVenueDTO addVenueDTO = new VenueDTOs.addVenueDTO(name);
-                            Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/addVenue", addVenueDTO);
-                            if (resp.isSuccessful()) {
-                                Toast.makeText(AdminActivity2.this, resp.body().string(), Toast.LENGTH_SHORT).show();
-                                refreshData();
-                            }
-
+                            Toast.makeText(AdminActivity2.this, dataManager.addVenue(addVenueDTO), Toast.LENGTH_SHORT).show();
+                            refreshData();
                         } catch (IOException e) {
-                            e.printStackTrace();
-                            Toast.makeText(AdminActivity2.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(AdminActivity2.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     })
                     .setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss())
@@ -93,13 +84,8 @@ public class AdminActivity2 extends AppCompatActivity {
 
     private void refreshData() {
         swipeRefreshLayout.setRefreshing(true);
-        Storage.INSTANCE.clearInstance();
         try {
-            Response r = HttpConnectionHandler.INSTANCE.newRequest(url + "/data/venues");
-            if (!r.isSuccessful()) {
-                throw new IOException();
-            }
-            Storage.INSTANCE.setVenues(HttpConnectionHandler.INSTANCE.getResponseFromJson(r, Venue.LIST_TYPE_TOKEN));
+            dataManager.requestVenues();
 
             CustomAdapter<Venue, CustomViewHolder> adapter = new CustomAdapter<>(R.layout.admin_list_item, Storage.INSTANCE.getVenues(), new FormHandler<>() {
                 @Override
@@ -117,15 +103,10 @@ public class AdminActivity2 extends AppCompatActivity {
                                 String name = inputName.getText().toString();
                                 try {
                                     VenueDTOs.setVenueNameDTO setVenueNameDTO = new VenueDTOs.setVenueNameDTO(item.getId(), name);
-                                    Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/setVenueName", setVenueNameDTO);
-                                    if (resp.isSuccessful()) {
-                                        Toast.makeText(AdminActivity2.this, resp.body().string(), Toast.LENGTH_SHORT).show();
-                                        refreshData();
-                                    }
-
+                                    Toast.makeText(AdminActivity2.this, dataManager.updateVenue(setVenueNameDTO), Toast.LENGTH_SHORT).show();
+                                    refreshData();
                                 } catch (IOException e) {
-                                    e.printStackTrace();
-                                    Toast.makeText(AdminActivity2.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(AdminActivity2.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                                 }
                             })
                             .setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss())
@@ -140,13 +121,11 @@ public class AdminActivity2 extends AppCompatActivity {
                                     "Confirm", (dialogInterface, i) -> {
                                         try {
                                             VenueDTOs.delVenueDTO delVenueDTO = new VenueDTOs.delVenueDTO(item.getId());
-                                            Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/delVenue", delVenueDTO);
-                                            if (resp.isSuccessful()) {
-                                                Toast.makeText(AdminActivity2.this, resp.body().string(), Toast.LENGTH_SHORT).show();
-                                                refreshData();
-                                            }
+                                            Toast.makeText(AdminActivity2.this, dataManager.deleteVenue(delVenueDTO), Toast.LENGTH_SHORT).show();
+                                            refreshData();
+
                                         } catch (IOException e) {
-                                            Toast.makeText(AdminActivity2.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(AdminActivity2.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                                         }
                                     }
                             ).setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss())
@@ -156,7 +135,6 @@ public class AdminActivity2 extends AppCompatActivity {
             }, item -> {
                 Intent intent = new Intent(AdminActivity2.this, AdminActivity3.class);
                 intent.putExtra("venue", new Gson().toJson(item));
-                intent.putExtra("url", url);
                 startActivity(intent);
             }, CustomViewHolder.class);
             venueList.setAdapter(adapter);

@@ -35,18 +35,17 @@ import hu.pte.mik.l4z4ix.src.Components.entityModel.Level;
 import hu.pte.mik.l4z4ix.src.Components.entityModel.Point;
 import hu.pte.mik.l4z4ix.src.Components.entityModel.Storage;
 import hu.pte.mik.l4z4ix.src.Components.entityModel.Venue;
-import hu.pte.mik.l4z4ix.src.Components.httpConnection.HttpConnectionHandler;
+import hu.pte.mik.l4z4ix.src.Components.httpConnection.DataManager;
 import hu.pte.mik.l4z4ix.src.Components.listHelpers.CustomPointAdapter;
 import hu.pte.mik.l4z4ix.src.Components.listHelpers.PointFormHandler;
 import hu.pte.mik.l4z4ix.src.Components.navigation.LocationProvider;
-import okhttp3.Response;
 
 public class AdminActivity4 extends AppCompatActivity {
-    String url;
-    Level level;
-    RecyclerView pointList;
-    SwipeRefreshLayout swipeRefreshLayout;
-    Venue venue;
+    private Level level;
+    private RecyclerView pointList;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private Venue venue;
+    private final DataManager dataManager = DataManager.getManager();
 
     @SuppressLint("MissingPermission")
     @Override
@@ -63,8 +62,6 @@ public class AdminActivity4 extends AppCompatActivity {
         backButton.setOnClickListener(v -> {
             finish();
         });
-
-        url = getIntent().getStringExtra("url");
         venue = new Gson().fromJson(getIntent().getStringExtra("venue"), Venue.class);
         level = Storage.INSTANCE.getLevels().stream().filter(x -> x.getId() == Integer.parseInt(getIntent().getStringExtra("levelId"))).findFirst().get();
         levelName.setText(level.getName());
@@ -143,15 +140,10 @@ public class AdminActivity4 extends AppCompatActivity {
                         Double altitude = Double.parseDouble(inputAltitude.getText().toString());
                         try {
                             PointDTOs.addPointDTO addPointDTO = new PointDTOs.addPointDTO(latitude, longitude, altitude, name, selectedLevel[0].getId());
-                            Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/addPoint", addPointDTO);
-                            if (resp.isSuccessful()) {
-                                Toast.makeText(AdminActivity4.this, resp.body().string(), Toast.LENGTH_SHORT).show();
-                                refreshData();
-                            }
-
+                            Toast.makeText(AdminActivity4.this, dataManager.addPoint(addPointDTO), Toast.LENGTH_SHORT).show();
+                            refreshData();
                         } catch (IOException e) {
-                            e.printStackTrace();
-                            Toast.makeText(AdminActivity4.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(AdminActivity4.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                         } finally {
                             LocationProvider.getInstance(null).stop();
                         }
@@ -172,18 +164,12 @@ public class AdminActivity4 extends AppCompatActivity {
         swipeRefreshLayout.setRefreshing(true);
         Storage.INSTANCE.clearInstance();
         try {
-            Response r = HttpConnectionHandler.INSTANCE.newRequest(url + "/data/venuedata/" + venue.getId());
-            if (!r.isSuccessful()) {
-                throw new IOException();
-            }
-            Storage.INSTANCE.setLevels(HttpConnectionHandler.INSTANCE.getResponseFromJson(r, Level.LIST_TYPE_TOKEN));
+            dataManager.requestVenueData(venue.getId());
             level = Storage.INSTANCE.getLevels().stream().filter(l -> Objects.equals(l.getId(), level.getId())).findFirst().get();
-
             CustomPointAdapter adapter = new CustomPointAdapter(R.layout.admin_pointlist_item, level.getPoints(), new PointFormHandler() {
                 @Override
                 public void onManageConnectionClick(Point item) {
                     Intent intent = new Intent(AdminActivity4.this, AdminActivity5.class);
-                    intent.putExtra("url", url);
                     intent.putExtra("levelId", level.getId() + "");
                     intent.putExtra("venue", new Gson().toJson(venue));
                     intent.putExtra("point", new Gson().toJson(item));
@@ -272,14 +258,10 @@ public class AdminActivity4 extends AppCompatActivity {
 
                                 try {
                                     PointDTOs.editPointDTO editPointDTO = new PointDTOs.editPointDTO(newpoint, selectedLevel[0].getId());
-                                    Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/updatePoint", editPointDTO);
-                                    if (resp.isSuccessful()) {
-                                        Toast.makeText(AdminActivity4.this, resp.body().string(), Toast.LENGTH_SHORT).show();
-                                        refreshData();
-                                    }
+                                    Toast.makeText(AdminActivity4.this, dataManager.updatePoint(editPointDTO), Toast.LENGTH_SHORT).show();
+                                    refreshData();
                                 } catch (IOException e) {
-                                    e.printStackTrace();
-                                    Toast.makeText(AdminActivity4.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(AdminActivity4.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                                 } finally {
                                     LocationProvider.getInstance(null).stop();
                                 }
@@ -298,15 +280,10 @@ public class AdminActivity4 extends AppCompatActivity {
                                     "Confirm", (dialogInterface, i) -> {
                                         try {
                                             PointDTOs.deletePointDTO deletePointDTO = new PointDTOs.deletePointDTO(item.getId());
-                                            Response resp = HttpConnectionHandler.INSTANCE.doPost(url + "/admin/delPoint", deletePointDTO);
-                                            if (resp.isSuccessful()) {
-                                                Toast.makeText(AdminActivity4.this, resp.body().string(), Toast.LENGTH_SHORT).show();
-                                                refreshData();
-                                            } else
-                                                Toast.makeText(AdminActivity4.this, "Something went wrong, code: " + resp.code(), Toast.LENGTH_SHORT).show();
-
+                                            Toast.makeText(AdminActivity4.this, dataManager.deletePoint(deletePointDTO), Toast.LENGTH_SHORT).show();
+                                            refreshData();
                                         } catch (IOException e) {
-                                            Toast.makeText(AdminActivity4.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(AdminActivity4.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                                         }
                                     }
                             ).setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss())
@@ -314,7 +291,6 @@ public class AdminActivity4 extends AppCompatActivity {
                     dialog.show();
                 }
             }, item -> {
-                //Point selected
                 Intent intent = new Intent(AdminActivity4.this, MainActivity4.class);
                 intent.putExtra("type", "admin");
                 intent.putExtra("point", (new Gson()).toJson(item, Point.class));

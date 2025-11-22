@@ -29,6 +29,7 @@ import okhttp3.Response;
 import okio.BufferedSink;
 
 public class HttpConnectionHandler {
+    private static final HttpConnectionHandler INSTANCE = new HttpConnectionHandler();
     private final ObjectMapper mapper = new ObjectMapper().setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
     CookieJar cookieJar = new CookieJar() {
         private final HashMap<String, List<Cookie>> cookieStore = new HashMap<>();
@@ -47,7 +48,11 @@ public class HttpConnectionHandler {
     private final OkHttpClient client = new OkHttpClient.Builder()
             .cookieJar(cookieJar)
             .build();
-    public static final HttpConnectionHandler INSTANCE = new HttpConnectionHandler();
+
+
+    public static HttpConnectionHandler getInstance() {
+        return INSTANCE;
+    }
 
     private HttpConnectionHandler() {
         StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().permitAll().build());
