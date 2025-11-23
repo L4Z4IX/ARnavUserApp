@@ -75,7 +75,7 @@ dependencies {
 }
 apply plugin: 'com.google.ar.sceneform.plugin'
 
-sceneform.asset('sampledata/pawn.obj', // 'Source Asset Path' specified during import.
+sceneform.asset('sampledata/pointmarker.obj', // 'Source Asset Path' specified during import.
         'default',                            // 'Material Path' specified during import.
-        'sampledata/pawn.sfa',         // '.sfa Output Path' specified during import.
-        'src/main/res/raw/pawn')              // '.sfb Output Path' specified during import.
+        'sampledata/pointmarker.sfa',         // '.sfa Output Path' specified during import.
+        'src/main/res/raw/pointmarker')              // '.sfb Output Path' specified during import.

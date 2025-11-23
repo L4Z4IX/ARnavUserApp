@@ -121,7 +121,7 @@ public class MainActivity4 extends AppCompatActivity {
         }));
 
         ModelRenderable.builder()
-                .setSource(this, R.raw.pawn).build().thenAccept(r -> renderable = r);
+                .setSource(this, R.raw.pointmarker).build().thenAccept(r -> renderable = r);
 
 
         arFragment = (ArFragment) getSupportFragmentManager()

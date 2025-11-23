@@ -1,24 +1,24 @@
 {
   materials: [
     {
-      name: 'pawn',
+      name: 'pointmarker',
       parameters: [
         {
           baseColor: null,
         },
         {
           baseColorTint: [
-            0.59999999999999998,
-            0.59999999999999998,
-            0.59999999999999998,
+            1,
+            1.1000000000000001,
+            0,
             1,
           ],
         },
         {
-          metallic: 0,
+          metallic: 1,
         },
         {
-          roughness: 1,
+          roughness: 0.074329000000000006,
         },
         {
           opacity: null,
@@ -34,8 +34,8 @@
       'Orientation',
     ],
     collision: {},
-    file: 'sampledata/pawn.obj',
-    name: 'pawn',
+    file: 'sampledata/pointmarker.obj',
+    name: 'pointmarker',
     recenter: 'root',
   },
   version: '0.54:2',
