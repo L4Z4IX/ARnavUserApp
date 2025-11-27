@@ -130,10 +130,6 @@ public class LocationProvider {
         } else {
             Location movedLocation = moveLocation(newLocation, distanceToZero, bearingDegreesToZero);
             addToHistory(movedLocation);
-            //System.out.println("LOCPROC:def: d: " + distanceToZero + " b: " + bearingDegreesToZero + " new d: " + newLocation.distanceTo(movedLocation) + " b: " + movedLocation.bearingTo(newLocation));
-            System.out.println("AAA" + newLocation.getLatitude() + ";" + newLocation.getLongitude() + ";" + newLocation.getAccuracy());
-            System.out.println("AAA" + bearingDegreesToZero + ";" + distanceToZero);
-            System.out.println("AAA" + movedLocation.getLatitude() + ";" + movedLocation.getLongitude() + ";" + movedLocation.getAccuracy());
         }
         currentLocation = fuseLocationHistory();
     }
