@@ -62,13 +62,8 @@ public class AdminActivity5 extends AppCompatActivity {
             CustomConnectionAdapter connectionAdapter = new CustomConnectionAdapter(Storage.INSTANCE.getLevels().stream().flatMap(x -> x.getPoints().stream()).toList(), Storage.INSTANCE.getConnections(), (item, state) -> {
                 Response res;
                 try {
-                    if (state) {
-                        ConnectionDTOs.addConnectionDTO addConnectionDTO = new ConnectionDTOs.addConnectionDTO(point.getId(), item.getId());
-                        Toast.makeText(AdminActivity5.this, dataManager.addConnection(addConnectionDTO), Toast.LENGTH_SHORT).show();
-                    } else {
-                        ConnectionDTOs.delConnectionDTO delConnectionDTO = new ConnectionDTOs.delConnectionDTO(point.getId(), item.getId());
-                        Toast.makeText(AdminActivity5.this, dataManager.deleteConnection(delConnectionDTO), Toast.LENGTH_SHORT).show();
-                    }
+                    ConnectionDTOs.connectionDTO connectionDTO = new ConnectionDTOs.connectionDTO(point.getId(), item.getId());
+                    dataManager.handleConnection(connectionDTO);
                 } catch (IOException e) {
                     Toast.makeText(AdminActivity5.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                 }

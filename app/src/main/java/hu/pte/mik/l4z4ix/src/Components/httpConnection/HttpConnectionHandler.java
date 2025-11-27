@@ -2,9 +2,6 @@ package hu.pte.mik.l4z4ix.src.Components.httpConnection;
 
 import android.os.StrictMode;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,7 +23,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import okio.BufferedSink;
 
 public class HttpConnectionHandler {
     private static final HttpConnectionHandler INSTANCE = new HttpConnectionHandler();
@@ -58,40 +54,25 @@ public class HttpConnectionHandler {
         StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().permitAll().build());
     }
 
-    public Response newRequest(String url) throws IOException {
+    public Response doRequest(String url) throws IOException {
         return client.newCall(new Request.Builder().url(url).build()).execute();
     }
 
-    public Response doPost(String url) throws IOException {
-        RequestBody requestBody = new RequestBody() {
-            @Nullable
-            @Override
-            public MediaType contentType() {
-                return null;
-            }
-
-            @Override
-            public void writeTo(@NonNull BufferedSink bufferedSink) throws IOException {
-
-            }
-        };
-        return client.newCall(new Request.Builder().url(url).post(requestBody).build()).execute();
-    }
-
-    public Response doPost(String url, RequestBody requestBody) throws IOException {
-        return client.newCall(new Request.Builder().url(url).post(requestBody).build()).execute();
-    }
-
-    public Response doPost(String url, Object DTO) throws IOException {
+    public Response doRequest(String url, Object DTO, RequestType requestType) throws IOException {
         Headers headers = new Headers.Builder().add("Content-Type: application/json").build();
         String json = mapper.writeValueAsString(DTO);
         MediaType JSON = MediaType.get("application/json; charset=utf-8");
         RequestBody requestBody = RequestBody.create(json, JSON);
-        return client.newCall(new Request.Builder().url(url).headers(headers).post(requestBody).build()).execute();
-    }
+        return switch (requestType) {
+            case GET -> client.newCall(new Request.Builder().url(url).build()).execute();
+            case POST ->
+                    client.newCall(new Request.Builder().url(url).headers(headers).post(requestBody).build()).execute();
+            case PATCH ->
+                    client.newCall(new Request.Builder().url(url).headers(headers).patch(requestBody).build()).execute();
+            case DELETE ->
+                    client.newCall(new Request.Builder().url(url).headers(headers).delete(requestBody).build()).execute();
+        };
 
-    public Response doPost(String url, Headers headers, RequestBody requestBody) throws IOException {
-        return client.newCall(new Request.Builder().url(url).headers(headers).post(requestBody).build()).execute();
     }
 
     public String getResponseString(Response response) throws IOException {

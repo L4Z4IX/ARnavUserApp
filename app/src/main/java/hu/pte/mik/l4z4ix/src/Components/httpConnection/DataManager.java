@@ -34,11 +34,11 @@ public class DataManager {
     }
 
     public Response doHello(String Url) throws IOException {
-        return httpConnectionHandler.newRequest(PROTOCOL + Url + "/data/hello");
+        return httpConnectionHandler.doRequest(PROTOCOL + Url + "/data/hello");
     }
 
     public void requestVenues() throws IOException {
-        Response r = httpConnectionHandler.newRequest(PROTOCOL + url + "/data/venues");
+        Response r = httpConnectionHandler.doRequest(PROTOCOL + url + "/data/venues");
         if (!r.isSuccessful()) {
             throw new IOException("Something went wrong. Try again later.");
         }
@@ -59,12 +59,12 @@ public class DataManager {
 
     public void requestVenueData(Long venueId) throws IOException {
         try {
-            Response r = httpConnectionHandler.newRequest(PROTOCOL + url + "/data/venuedata/" + venueId);
+            Response r = httpConnectionHandler.doRequest(PROTOCOL + url + "/data/venuedata/" + venueId);
             if (!r.isSuccessful()) {
                 throw new IOException();
             }
 
-            Response r2 = httpConnectionHandler.newRequest(PROTOCOL + url + "/data/connectionsByVenue?venueId=" + venueId);
+            Response r2 = httpConnectionHandler.doRequest(PROTOCOL + url + "/data/connectionsByVenue?venueId=" + venueId);
             if (!r2.isSuccessful()) {
                 throw new IOException();
             }
@@ -79,7 +79,7 @@ public class DataManager {
 
     public void requestConnectionsByVenue(Venue venue) throws IOException {
         try {
-            Response r = httpConnectionHandler.newRequest(url + "/data/connectionsByVenue?venueId=" + venue.getId());
+            Response r = httpConnectionHandler.doRequest(PROTOCOL + url + "/data/connectionsByVenue?venueId=" + venue.getId());
             if (!r.isSuccessful()) {
                 throw new IOException();
             }
@@ -94,13 +94,13 @@ public class DataManager {
 
     public String doLogin(Login credentials) throws IOException {
         try {
-            Response r1 = httpConnectionHandler.newRequest(PROTOCOL + url + "/data/hello");
+            Response r1 = httpConnectionHandler.doRequest(PROTOCOL + url + "/data/hello");
             if (!r1.isSuccessful()) {
                 throw new IOException("Invalid url");
             }
             String[] data = httpConnectionHandler.getResponseString(r1).split(";");
             Response response;
-            response = httpConnectionHandler.doPost(PROTOCOL + url + "/login", credentials);
+            response = httpConnectionHandler.doRequest(PROTOCOL + url + "/login", credentials, RequestType.POST);
             if (!response.isSuccessful()) {
                 throw new IOException("Invalid credentials");
             }
@@ -113,61 +113,58 @@ public class DataManager {
     }
 
     public String addVenue(VenueDTOs.addVenueDTO venue) throws IOException {
-        return doHttpCall("/admin/addVenue", venue, "Error while adding venue!");
+        return doHttpCall("/admin/venue", venue, "Error while adding venue!", RequestType.POST);
     }
 
     public String updateVenue(VenueDTOs.setVenueNameDTO venue) throws IOException {
-        return doHttpCall("/admin/setVenueName", venue, "Error while updating venue!");
+        return doHttpCall("/admin/venue", venue, "Error while updating venue!", RequestType.PATCH);
     }
 
     public String deleteVenue(VenueDTOs.delVenueDTO venue) throws IOException {
-        return doHttpCall("/admin/delVenue", venue, "Error while removing venue!");
+        return doHttpCall("/admin/venue", venue, "Error while removing venue!", RequestType.DELETE);
     }
 
     public String addLevel(LevelDTOs.addLevelDTO level) throws IOException {
-        return doHttpCall("/admin/addLevel", level, "Error while adding level!");
+        return doHttpCall("/admin/level", level, "Error while adding level!", RequestType.POST);
     }
 
     public String updateLevel(LevelDTOs.setLevelNameDTO level) throws IOException {
-        return doHttpCall("/admin/setLevelName", level, "Error while updating level!");
+        return doHttpCall("/admin/level", level, "Error while updating level!", RequestType.PATCH);
     }
 
     public String deleteLevel(LevelDTOs.delLevelDTO level) throws IOException {
-        return doHttpCall("/admin/delLevel", level, "Error while deleting level!");
+        return doHttpCall("/admin/level", level, "Error while deleting level!", RequestType.DELETE);
     }
 
     public String addPoint(PointDTOs.addPointDTO point) throws IOException {
-        return doHttpCall("/admin/addPoint", point, "Error while adding point!");
+        return doHttpCall("/admin/point", point, "Error while adding point!", RequestType.POST);
     }
 
     public String updatePoint(PointDTOs.editPointDTO point) throws IOException {
-        return doHttpCall("/admin/updatePoint", point, "Error while updating point!");
+        return doHttpCall("/admin/point", point, "Error while updating point!", RequestType.PATCH);
     }
 
     public String deletePoint(PointDTOs.deletePointDTO point) throws IOException {
-        return doHttpCall("/admin/delPoint", point, "Error while deleting point!");
+        return doHttpCall("/admin/point", point, "Error while deleting point!", RequestType.DELETE);
     }
 
-    public String addConnection(ConnectionDTOs.addConnectionDTO connection) throws IOException {
-        return doHttpCall("/admin/addConnection", connection, "Error while adding connection!");
+    public void handleConnection(ConnectionDTOs.connectionDTO connection) throws IOException {
+        doHttpCall("/admin/connection", connection, "Error while changing connection!", RequestType.POST);
     }
 
-    public String deleteConnection(ConnectionDTOs.delConnectionDTO connection) throws IOException {
-        return doHttpCall("/admin/delConnection", connection, "Error while removing connection!");
-    }
 
-    private String doHttpCall(String subUrl, Object DTO, String errorMessage) throws IOException {
+    private String doHttpCall(String subUrl, Object DTO, String errorMessage, RequestType requestType) throws IOException {
         try {
             Response resp;
-            resp = httpConnectionHandler.doPost(PROTOCOL + url + subUrl, DTO);
+            resp = httpConnectionHandler.doRequest(PROTOCOL + url + subUrl, DTO, requestType);
             if (!resp.isSuccessful()) {
-                throw new IOException(errorMessage);
+                throw new IOException("Response was not successful");
             }
             return httpConnectionHandler.getResponseString(resp);
         } catch (IOException e) {
-            logger.log(Level.SEVERE, e.getMessage());
+            logger.log(Level.SEVERE, e.getMessage() + ", " + errorMessage);
             e.printStackTrace();
-            throw new IOException(e.getMessage());
+            throw new IOException(errorMessage);
         }
     }
 }
