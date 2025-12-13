@@ -42,7 +42,7 @@ import hu.pte.mik.l4z4ix.src.Components.navigation.LocationProvider;
 import hu.pte.mik.l4z4ix.src.Components.navigation.Navigator;
 import hu.pte.mik.l4z4ix.src.Components.navigation.RotationProvider;
 
-public class MainActivity4 extends AppCompatActivity {
+public class ArActivity extends AppCompatActivity {
 
     private final Logger logger = Logger.getLogger("MainActivity4");
     private ArFragment arFragment;
@@ -92,7 +92,7 @@ public class MainActivity4 extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main4);
+        setContentView(R.layout.activity_ar);
 
         curLat = findViewById(R.id.curLat);
         curLng = findViewById(R.id.curLng);
@@ -208,10 +208,10 @@ public class MainActivity4 extends AppCompatActivity {
                 } else {
                     runOnUiThread(() -> {
                         arFragment.onPause();
-                        new AlertDialog.Builder(MainActivity4.this)
+                        new AlertDialog.Builder(ArActivity.this)
                                 .setTitle("Reached destination")
                                 .setMessage("You have reached your selected destination.")
-                                .setPositiveButton("Finish", (dialog, which) -> MainActivity4.this.finish())
+                                .setPositiveButton("Finish", (dialog, which) -> ArActivity.this.finish())
                                 .show();
                     });
                     this.cancel();

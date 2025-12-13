@@ -22,7 +22,7 @@ import hu.pte.mik.l4z4ix.src.Components.httpConnection.DataManager;
 import hu.pte.mik.l4z4ix.src.Components.listHelpers.CustomConnectionAdapter;
 import okhttp3.Response;
 
-public class AdminActivity5 extends AppCompatActivity {
+public class AdminConnectionActivity extends AppCompatActivity {
 
     private Point point;
     private Venue venue;
@@ -33,7 +33,7 @@ public class AdminActivity5 extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_admin5);
+        setContentView(R.layout.activity_admin_connection);
         swipeRefreshLayout = findViewById(R.id.admin_connection_refreshLayout);
         connectionList = findViewById(R.id.admin_connection_list);
         TextView pointName = findViewById(R.id.admin_pointConnection_name);
@@ -65,14 +65,14 @@ public class AdminActivity5 extends AppCompatActivity {
                     ConnectionDTOs.connectionDTO connectionDTO = new ConnectionDTOs.connectionDTO(point.getId(), item.getId());
                     dataManager.handleConnection(connectionDTO);
                 } catch (IOException e) {
-                    Toast.makeText(AdminActivity5.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AdminConnectionActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             }, point);
             connectionList.setAdapter(connectionAdapter);
 
 
         } catch (IOException e) {
-            Toast.makeText(AdminActivity5.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(AdminConnectionActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
         } finally {
             swipeRefreshLayout.setRefreshing(false);
         }

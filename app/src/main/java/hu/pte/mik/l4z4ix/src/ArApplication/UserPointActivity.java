@@ -23,7 +23,7 @@ import hu.pte.mik.l4z4ix.src.Components.entityModel.Point;
 import hu.pte.mik.l4z4ix.src.Components.entityModel.Storage;
 import hu.pte.mik.l4z4ix.src.Components.httpConnection.DataManager;
 
-public class MainActivity3 extends AppCompatActivity {
+public class UserPointActivity extends AppCompatActivity {
     private ArrayAdapter<Point> adapter;
     private ListView pointList;
     private Button backButton;
@@ -35,7 +35,7 @@ public class MainActivity3 extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main3);
+        setContentView(R.layout.activity_user_point);
         TextInputLayout searchBar = findViewById(R.id.textInputLayout);
         pointList = findViewById(R.id.pointList);
         backButton = findViewById(R.id.backButton2);
@@ -86,15 +86,15 @@ public class MainActivity3 extends AppCompatActivity {
     private void getData(String venueIndex) {
         try {
             dataManager.requestVenueData(Integer.parseInt(venueIndex));
-            Toast.makeText(MainActivity3.this, "Points loaded", Toast.LENGTH_SHORT).show();
+            Toast.makeText(UserPointActivity.this, "Points loaded", Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
-            Toast.makeText(MainActivity3.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(UserPointActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
         populateList("");
     }
 
     private void itemSelected(AdapterView<ArrayAdapter<Point>> adapter, int position) {
-        Intent intent = new Intent(MainActivity3.this, MainActivity4.class);
+        Intent intent = new Intent(UserPointActivity.this, ArActivity.class);
         intent.putExtra("point", (new Gson()).toJson(adapter.getItemAtPosition(position), Point.class));
         intent.putExtra("venueId", venueId);
         intent.putExtra("type", "user");

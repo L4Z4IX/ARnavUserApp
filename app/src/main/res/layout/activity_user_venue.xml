@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.google.ar.core.examples.java.helloar.AdminActivity2">
-
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    
     <Button
-        android:id="@+id/backButtonAdmin2"
+        android:id="@+id/backButton"
         android:layout_width="66dp"
         android:layout_height="47dp"
         android:layout_margin="16dp"
@@ -18,7 +17,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/admin_venue_name"
+        android:id="@+id/textView"
         android:layout_width="234dp"
         android:layout_height="33dp"
         android:layout_marginTop="16dp"
@@ -32,7 +31,7 @@
         tools:text="Second Screen!" />
 
     <TextView
-        android:id="@+id/textView8"
+        android:id="@+id/textView2"
         android:layout_width="234dp"
         android:layout_height="33dp"
         android:layout_marginTop="48dp"
@@ -45,36 +44,19 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/admin_venue_refreshLayout"
-        android:layout_width="410dp"
-        android:layout_height="645dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView8"
-        app:layout_constraintVertical_bias="0.0">
+        android:id="@+id/swipeRefreshLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="100dp"
+        tools:layout_editor_absoluteY="84dp">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/admin_venue_list"
+        <ListView
+            android:id="@+id/venueList"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textView8" />
+            android:layout_height="match_parent">
 
+        </ListView>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-    <ImageButton
-        android:id="@+id/level_add_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="50dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:srcCompat="@android:drawable/ic_input_add" />
 </androidx.constraintlayout.widget.ConstraintLayout>

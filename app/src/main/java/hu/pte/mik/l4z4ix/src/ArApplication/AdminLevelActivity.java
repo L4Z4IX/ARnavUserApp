@@ -20,7 +20,8 @@ import com.google.gson.Gson;
 
 import java.io.IOException;
 
-import hu.pte.mik.l4z4ix.src.Components.dto.VenueDTOs;
+import hu.pte.mik.l4z4ix.src.Components.dto.LevelDTOs;
+import hu.pte.mik.l4z4ix.src.Components.entityModel.Level;
 import hu.pte.mik.l4z4ix.src.Components.entityModel.Storage;
 import hu.pte.mik.l4z4ix.src.Components.entityModel.Venue;
 import hu.pte.mik.l4z4ix.src.Components.httpConnection.DataManager;
@@ -28,48 +29,47 @@ import hu.pte.mik.l4z4ix.src.Components.listHelpers.CustomAdapter;
 import hu.pte.mik.l4z4ix.src.Components.listHelpers.CustomViewHolder;
 import hu.pte.mik.l4z4ix.src.Components.listHelpers.FormHandler;
 
-
-public class AdminActivity2 extends AppCompatActivity {
-    private RecyclerView venueList;
+public class AdminLevelActivity extends AppCompatActivity {
+    private Venue venue;
+    private RecyclerView levelList;
     private SwipeRefreshLayout swipeRefreshLayout;
     private final DataManager dataManager = DataManager.getManager();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_admin2);
+        setContentView(R.layout.activity_admin_level);
 
-        TextView serverName = findViewById(R.id.admin_venue_name);
-        venueList = findViewById(R.id.admin_venue_list);
-        swipeRefreshLayout = findViewById(R.id.admin_venue_refreshLayout);
+        levelList = findViewById(R.id.admin_level_list);
+        swipeRefreshLayout = findViewById(R.id.admin_level_refreshLayout);
         ImageButton addButton = findViewById(R.id.level_add_button);
-        Button backButton = findViewById(R.id.backButtonAdmin2);
+        TextView venueName = findViewById(R.id.admin_venueLevel_name);
+        Button backButton = findViewById(R.id.backButtonAdmin3);
 
         backButton.setOnClickListener(v -> {
             finish();
         });
-
-        serverName.setText(getIntent().getStringExtra("name").trim());
-        venueList.setLayoutManager(new LinearLayoutManager(this));
+        venue = new Gson().fromJson(getIntent().getStringExtra("venue"), Venue.class);
+        venueName.setText(venue.getName());
+        levelList.setLayoutManager(new LinearLayoutManager(this));
         refreshData();
         addButton.setOnClickListener(v -> {
             LayoutInflater inflater = LayoutInflater.from(this);
-            View view = inflater.inflate(R.layout.admin_venue_dialog, null);
+            View view = inflater.inflate(R.layout.admin_level_dialog, null);
 
-            EditText inputName = view.findViewById(R.id.input_name);
+            EditText inputName = view.findViewById(R.id.pointName);
 
             AlertDialog dialog = new AlertDialog.Builder(this)
-                    .setTitle("Add venue")
+                    .setTitle("Add level")
                     .setView(view)
                     .setPositiveButton("Add", (dialogInterface, i) -> {
                         String name = inputName.getText().toString();
                         try {
-                            VenueDTOs.addVenueDTO addVenueDTO = new VenueDTOs.addVenueDTO(name);
-                            Toast.makeText(AdminActivity2.this, dataManager.addVenue(addVenueDTO), Toast.LENGTH_SHORT).show();
+                            LevelDTOs.addLevelDTO addLevelDTO = new LevelDTOs.addLevelDTO(name, venue.getId());
+                            Toast.makeText(AdminLevelActivity.this, dataManager.addLevel(addLevelDTO), Toast.LENGTH_SHORT).show();
                             refreshData();
                         } catch (IOException e) {
-                            Toast.makeText(AdminActivity2.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(AdminLevelActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     })
                     .setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss())
@@ -84,29 +84,30 @@ public class AdminActivity2 extends AppCompatActivity {
 
     private void refreshData() {
         swipeRefreshLayout.setRefreshing(true);
+        Storage.INSTANCE.clearInstance();
         try {
-            dataManager.requestVenues();
+            dataManager.requestVenueData(venue.getId());
 
-            CustomAdapter<Venue, CustomViewHolder> adapter = new CustomAdapter<>(R.layout.admin_list_item, Storage.INSTANCE.getVenues(), new FormHandler<>() {
+            CustomAdapter<Level, CustomViewHolder> adapter = new CustomAdapter<>(R.layout.admin_list_item, Storage.INSTANCE.getLevels(), new FormHandler<>() {
                 @Override
-                public void onEditButtonClick(Venue item) {
-                    LayoutInflater inflater = LayoutInflater.from(AdminActivity2.this);
-                    View view = inflater.inflate(R.layout.admin_venue_dialog, null);
+                public void onEditButtonClick(Level item) {
+                    LayoutInflater inflater = LayoutInflater.from(AdminLevelActivity.this);
+                    View view = inflater.inflate(R.layout.admin_level_dialog, null);
 
-                    EditText inputName = view.findViewById(R.id.input_name);
+                    EditText inputName = view.findViewById(R.id.pointName);
                     inputName.setText(item.getName());
 
-                    AlertDialog dialog = new AlertDialog.Builder(AdminActivity2.this)
-                            .setTitle("Edit venue")
+                    AlertDialog dialog = new AlertDialog.Builder(AdminLevelActivity.this)
+                            .setTitle("Edit Level")
                             .setView(view)
                             .setPositiveButton("Edit", (dialogInterface, i) -> {
                                 String name = inputName.getText().toString();
                                 try {
-                                    VenueDTOs.setVenueNameDTO setVenueNameDTO = new VenueDTOs.setVenueNameDTO(item.getId(), name);
-                                    Toast.makeText(AdminActivity2.this, dataManager.updateVenue(setVenueNameDTO), Toast.LENGTH_SHORT).show();
+                                    LevelDTOs.setLevelNameDTO setLevelNameDTO = new LevelDTOs.setLevelNameDTO(name, item.getId());
+                                    Toast.makeText(AdminLevelActivity.this, dataManager.updateLevel(setLevelNameDTO), Toast.LENGTH_SHORT).show();
                                     refreshData();
                                 } catch (IOException e) {
-                                    Toast.makeText(AdminActivity2.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(AdminLevelActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                                 }
                             })
                             .setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss())
@@ -116,16 +117,15 @@ public class AdminActivity2 extends AppCompatActivity {
                 }
 
                 @Override
-                public void onRemoveButtonClick(Venue item) {
-                    AlertDialog dialog = new AlertDialog.Builder(AdminActivity2.this).setTitle("Confirmation").setMessage("Confirm the removal of " + item.getName() + " venue. Warning: all corespondent levels, points and connections will be lost!").setPositiveButton(
+                public void onRemoveButtonClick(Level item) {
+                    AlertDialog dialog = new AlertDialog.Builder(AdminLevelActivity.this).setTitle("Confirmation").setMessage("Confirm the removal of " + item.getName() + " level. Warning: All corespondent points and connections will be lost!").setPositiveButton(
                                     "Confirm", (dialogInterface, i) -> {
                                         try {
-                                            VenueDTOs.delVenueDTO delVenueDTO = new VenueDTOs.delVenueDTO(item.getId());
-                                            Toast.makeText(AdminActivity2.this, dataManager.deleteVenue(delVenueDTO), Toast.LENGTH_SHORT).show();
+                                            LevelDTOs.delLevelDTO delLevelDTO = new LevelDTOs.delLevelDTO(item.getId());
+                                            Toast.makeText(AdminLevelActivity.this, dataManager.deleteLevel(delLevelDTO), Toast.LENGTH_SHORT).show();
                                             refreshData();
-
                                         } catch (IOException e) {
-                                            Toast.makeText(AdminActivity2.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(AdminLevelActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                                         }
                                     }
                             ).setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss())
@@ -133,16 +133,17 @@ public class AdminActivity2 extends AppCompatActivity {
                     dialog.show();
                 }
             }, item -> {
-                Intent intent = new Intent(AdminActivity2.this, AdminActivity3.class);
-                intent.putExtra("venue", new Gson().toJson(item));
+                Intent intent = new Intent(AdminLevelActivity.this, AdminPointActivity.class);
+                intent.putExtra("levelId", item.getId() + "");
+                intent.putExtra("venue", new Gson().toJson(venue));
                 startActivity(intent);
             }, CustomViewHolder.class);
-            venueList.setAdapter(adapter);
+            levelList.setAdapter(adapter);
 
             swipeRefreshLayout.setRefreshing(false);
 
         } catch (IOException e) {
-            Toast.makeText(AdminActivity2.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+            Toast.makeText(AdminLevelActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
             swipeRefreshLayout.setRefreshing(false);
         }
     }

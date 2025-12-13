@@ -19,8 +19,7 @@ import hu.pte.mik.l4z4ix.src.Components.entityModel.Venue;
 import hu.pte.mik.l4z4ix.src.Components.httpConnection.DataManager;
 
 
-public class MainActivity2 extends AppCompatActivity {
-    String url = "";
+public class UserVenueActivity extends AppCompatActivity {
     private ListView venueList;
     private ArrayAdapter<Venue> adapter;
     private final DataManager dataManager = DataManager.getManager();
@@ -28,7 +27,7 @@ public class MainActivity2 extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main2);
+        setContentView(R.layout.activity_user_venue);
 
         TextView textView = findViewById(R.id.textView);
         Button backButton = findViewById(R.id.backButton);
@@ -62,19 +61,19 @@ public class MainActivity2 extends AppCompatActivity {
         try {
             dataManager.requestVenues();
         } catch (IOException e) {
-            Toast.makeText(MainActivity2.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(UserVenueActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, Storage.INSTANCE.getVenues());
         venueList.setAdapter(adapter);
         venueList.setOnItemClickListener((adapter, v, position, id) -> {
             itemSelected(position);
         });
-        Toast.makeText(MainActivity2.this, "Venues loaded", Toast.LENGTH_SHORT).show();
+        Toast.makeText(UserVenueActivity.this, "Venues loaded", Toast.LENGTH_SHORT).show();
         swipeRefreshLayout.setRefreshing(false);
     }
 
     private void itemSelected(int position) {
-        Intent intent = new Intent(MainActivity2.this, MainActivity3.class);
+        Intent intent = new Intent(UserVenueActivity.this, UserPointActivity.class);
         intent.putExtra("venueId", position + "");
         startActivity(intent);
     }

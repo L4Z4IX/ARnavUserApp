@@ -40,7 +40,7 @@ import hu.pte.mik.l4z4ix.src.Components.listHelpers.CustomPointAdapter;
 import hu.pte.mik.l4z4ix.src.Components.listHelpers.PointFormHandler;
 import hu.pte.mik.l4z4ix.src.Components.navigation.LocationProvider;
 
-public class AdminActivity4 extends AppCompatActivity {
+public class AdminPointActivity extends AppCompatActivity {
     private Level level;
     private RecyclerView pointList;
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -51,7 +51,7 @@ public class AdminActivity4 extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_admin4);
+        setContentView(R.layout.activity_admin_point);
 
         pointList = findViewById(R.id.admin_point_list);
         swipeRefreshLayout = findViewById(R.id.admin_point_refreshLayout);
@@ -140,10 +140,10 @@ public class AdminActivity4 extends AppCompatActivity {
                         Double altitude = Double.parseDouble(inputAltitude.getText().toString());
                         try {
                             PointDTOs.addPointDTO addPointDTO = new PointDTOs.addPointDTO(latitude, longitude, altitude, name, selectedLevel[0].getId());
-                            Toast.makeText(AdminActivity4.this, dataManager.addPoint(addPointDTO), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(AdminPointActivity.this, dataManager.addPoint(addPointDTO), Toast.LENGTH_SHORT).show();
                             refreshData();
                         } catch (IOException e) {
-                            Toast.makeText(AdminActivity4.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(AdminPointActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                         } finally {
                             LocationProvider.getInstance(null).stop();
                         }
@@ -169,7 +169,7 @@ public class AdminActivity4 extends AppCompatActivity {
             CustomPointAdapter adapter = new CustomPointAdapter(R.layout.admin_pointlist_item, level.getPoints(), new PointFormHandler() {
                 @Override
                 public void onManageConnectionClick(Point item) {
-                    Intent intent = new Intent(AdminActivity4.this, AdminActivity5.class);
+                    Intent intent = new Intent(AdminPointActivity.this, AdminConnectionActivity.class);
                     intent.putExtra("levelId", level.getId() + "");
                     intent.putExtra("venue", new Gson().toJson(venue));
                     intent.putExtra("point", new Gson().toJson(item));
@@ -180,7 +180,7 @@ public class AdminActivity4 extends AppCompatActivity {
                 @Override
                 public void onEditButtonClick(Point item) {
 
-                    LayoutInflater inflater = LayoutInflater.from(AdminActivity4.this);
+                    LayoutInflater inflater = LayoutInflater.from(AdminPointActivity.this);
                     View view = inflater.inflate(R.layout.admin_point_dialog, null);
 
                     EditText inputName = view.findViewById(R.id.pointName);
@@ -228,7 +228,7 @@ public class AdminActivity4 extends AppCompatActivity {
                     inputlongitude.setText(item.getLongitude() + "");
                     inputAltitude.setText(item.getAltitude() + "");
                     inputName.setText(item.getName());
-                    ArrayAdapter<Level> arrayAdapter = new ArrayAdapter<>(AdminActivity4.this, android.R.layout.simple_spinner_dropdown_item, Storage.INSTANCE.getLevels());
+                    ArrayAdapter<Level> arrayAdapter = new ArrayAdapter<>(AdminPointActivity.this, android.R.layout.simple_spinner_dropdown_item, Storage.INSTANCE.getLevels());
                     levelSpinner.setAdapter(arrayAdapter);
                     levelSpinner.setSelection(arrayAdapter.getPosition(level));
                     final Level[] selectedLevel = {level};
@@ -244,7 +244,7 @@ public class AdminActivity4 extends AppCompatActivity {
                         }
                     });
 
-                    AlertDialog dialog = new AlertDialog.Builder(AdminActivity4.this)
+                    AlertDialog dialog = new AlertDialog.Builder(AdminPointActivity.this)
                             .setTitle("Edit point")
                             .setView(view)
                             .setPositiveButton("Edit", (dialogInterface, i) -> {
@@ -258,10 +258,10 @@ public class AdminActivity4 extends AppCompatActivity {
 
                                 try {
                                     PointDTOs.editPointDTO editPointDTO = new PointDTOs.editPointDTO(newpoint, selectedLevel[0].getId());
-                                    Toast.makeText(AdminActivity4.this, dataManager.updatePoint(editPointDTO), Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(AdminPointActivity.this, dataManager.updatePoint(editPointDTO), Toast.LENGTH_SHORT).show();
                                     refreshData();
                                 } catch (IOException e) {
-                                    Toast.makeText(AdminActivity4.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(AdminPointActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                                 } finally {
                                     LocationProvider.getInstance(null).stop();
                                 }
@@ -276,14 +276,14 @@ public class AdminActivity4 extends AppCompatActivity {
 
                 @Override
                 public void onRemoveButtonClick(Point item) {
-                    AlertDialog dialog = new AlertDialog.Builder(AdminActivity4.this).setTitle("Confirmation").setMessage("Confirm the removal of " + item.getName() + " point").setPositiveButton(
+                    AlertDialog dialog = new AlertDialog.Builder(AdminPointActivity.this).setTitle("Confirmation").setMessage("Confirm the removal of " + item.getName() + " point").setPositiveButton(
                                     "Confirm", (dialogInterface, i) -> {
                                         try {
                                             PointDTOs.deletePointDTO deletePointDTO = new PointDTOs.deletePointDTO(item.getId());
-                                            Toast.makeText(AdminActivity4.this, dataManager.deletePoint(deletePointDTO), Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(AdminPointActivity.this, dataManager.deletePoint(deletePointDTO), Toast.LENGTH_SHORT).show();
                                             refreshData();
                                         } catch (IOException e) {
-                                            Toast.makeText(AdminActivity4.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(AdminPointActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                                         }
                                     }
                             ).setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss())
@@ -291,7 +291,7 @@ public class AdminActivity4 extends AppCompatActivity {
                     dialog.show();
                 }
             }, item -> {
-                Intent intent = new Intent(AdminActivity4.this, MainActivity4.class);
+                Intent intent = new Intent(AdminPointActivity.this, ArActivity.class);
                 intent.putExtra("type", "admin");
                 intent.putExtra("point", (new Gson()).toJson(item, Point.class));
                 startActivity(intent);
@@ -301,7 +301,7 @@ public class AdminActivity4 extends AppCompatActivity {
             swipeRefreshLayout.setRefreshing(false);
 
         } catch (IOException e) {
-            Toast.makeText(AdminActivity4.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+            Toast.makeText(AdminPointActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
             swipeRefreshLayout.setRefreshing(false);
         }
     }

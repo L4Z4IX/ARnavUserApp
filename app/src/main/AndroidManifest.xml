@@ -36,15 +36,15 @@
         android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
-            android:name="hu.pte.mik.l4z4ix.src.ArApplication.MainActivity4"
+            android:name="hu.pte.mik.l4z4ix.src.ArApplication.ArActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name="hu.pte.mik.l4z4ix.src.ArApplication.MainActivity3"
+            android:name="hu.pte.mik.l4z4ix.src.ArApplication.UserPointActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name="hu.pte.mik.l4z4ix.src.ArApplication.MainActivity2"
+            android:name="hu.pte.mik.l4z4ix.src.ArApplication.UserVenueActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
@@ -52,23 +52,23 @@
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name="hu.pte.mik.l4z4ix.src.ArApplication.AdminActivity2"
+            android:name="hu.pte.mik.l4z4ix.src.ArApplication.AdminVenueActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name="hu.pte.mik.l4z4ix.src.ArApplication.AdminActivity3"
+            android:name="hu.pte.mik.l4z4ix.src.ArApplication.AdminLevelActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name="hu.pte.mik.l4z4ix.src.ArApplication.AdminActivity4"
+            android:name="hu.pte.mik.l4z4ix.src.ArApplication.AdminPointActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name="hu.pte.mik.l4z4ix.src.ArApplication.AdminActivity5"
+            android:name="hu.pte.mik.l4z4ix.src.ArApplication.AdminConnectionActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name="hu.pte.mik.l4z4ix.src.ArApplication.MainActivity"
+            android:name="hu.pte.mik.l4z4ix.src.ArApplication.HomeActivity"
             android:configChanges="orientation|screenSize"
             android:exported="true"
             android:screenOrientation="sensorPortrait"

@@ -18,7 +18,7 @@ import hu.pte.mik.l4z4ix.src.Components.httpConnection.DataManager;
 import hu.pte.mik.l4z4ix.src.Components.httpConnection.HttpConnectionHandler;
 import okhttp3.Response;
 
-public class MainActivity extends AppCompatActivity {
+public class HomeActivity extends AppCompatActivity {
 
     private TextView clickableText;
     private EditText editTextInput;
@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_home);
 
         clickableText = findViewById(R.id.clickableText);
         editTextInput = findViewById(R.id.editTextInput);
@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
             showPopup();
         });
         adminButton.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, AdminActivity.class);
+            Intent intent = new Intent(HomeActivity.this, AdminActivity.class);
             startActivity(intent);
         });
 
@@ -52,26 +52,26 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     resp = dataManager.doHello(inputText);
                 } catch (IOException e) {
-                    Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(HomeActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                     return;
                 }
                 String[] data;
                 try {
                     data = HttpConnectionHandler.getInstance().getResponseString(resp).split(";");
                     if (data.length != 3) {
-                        Toast.makeText(MainActivity.this, "Address does not use correct configuration", Toast.LENGTH_LONG).show();
+                        Toast.makeText(HomeActivity.this, "Address does not use correct configuration", Toast.LENGTH_LONG).show();
                         System.out.println(data);
                         throw new RuntimeException();
                     }
                 } catch (Exception e) {
                     return;
                 }
-                Intent intent = new Intent(MainActivity.this, MainActivity2.class);
+                Intent intent = new Intent(HomeActivity.this, UserVenueActivity.class);
                 intent.putExtra("editTextInput", data[0].trim());
                 intent.putExtra("motdText", data[2].trim());
                 startActivity(intent);
             } else {
-                Toast.makeText(MainActivity.this, "Please enter an address", Toast.LENGTH_SHORT).show();
+                Toast.makeText(HomeActivity.this, "Please enter an address", Toast.LENGTH_SHORT).show();
             }
         });
     }

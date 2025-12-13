@@ -39,7 +39,7 @@ public class AdminActivity extends AppCompatActivity {
         dataManager.setUrl(address.getText().toString());
         Login login = new Login(name.getText().toString().trim(), pass.getText().toString().trim());
         try {
-            Intent intent = new Intent(AdminActivity.this, AdminActivity2.class);
+            Intent intent = new Intent(AdminActivity.this, AdminVenueActivity.class);
             intent.putExtra("name", dataManager.doLogin(login));
             startActivity(intent);
         } catch (IOException e) {
