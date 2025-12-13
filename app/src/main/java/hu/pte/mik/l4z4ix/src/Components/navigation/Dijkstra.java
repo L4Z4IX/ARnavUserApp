@@ -1,6 +1,7 @@
 package hu.pte.mik.l4z4ix.src.Components.navigation;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -57,8 +58,8 @@ public class Dijkstra {
         for (Point at = end; at != null; at = previous.get(at)) {
             pointsInOrder.add(at);
         }
-
-        return pointsInOrder.isEmpty() || !pointsInOrder.get(pointsInOrder.size() - 1).equals(start) ? new ArrayList<>() : pointsInOrder;
+        Collections.reverse(pointsInOrder);
+        return pointsInOrder.isEmpty() || !pointsInOrder.get(0).equals(start) ? new ArrayList<>() : pointsInOrder;
     }
 
 }
