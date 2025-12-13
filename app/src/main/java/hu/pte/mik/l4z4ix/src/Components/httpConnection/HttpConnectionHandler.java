@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.Cookie;
 import okhttp3.CookieJar;
@@ -43,6 +44,7 @@ public class HttpConnectionHandler {
     };
     private final OkHttpClient client = new OkHttpClient.Builder()
             .cookieJar(cookieJar)
+            .connectTimeout(1, TimeUnit.SECONDS)
             .build();
 
 

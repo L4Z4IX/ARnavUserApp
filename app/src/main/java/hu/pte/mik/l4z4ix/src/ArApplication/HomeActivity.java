@@ -46,33 +46,34 @@ public class HomeActivity extends AppCompatActivity {
 
         submitButton.setOnClickListener(v -> {
             String inputText = editTextInput.getText().toString().trim();
+            String[] data;
             if (!inputText.isEmpty()) {
                 dataManager.setUrl(inputText);
                 Response resp;
                 try {
-                    resp = dataManager.doHello(inputText);
+                    resp = dataManager.doHello();
                 } catch (IOException e) {
-                    Toast.makeText(HomeActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(HomeActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
                     return;
                 }
-                String[] data;
                 try {
-                    data = HttpConnectionHandler.getInstance().getResponseString(resp).split(";");
-                    if (data.length != 3) {
-                        Toast.makeText(HomeActivity.this, "Address does not use correct configuration", Toast.LENGTH_LONG).show();
-                        System.out.println(data);
-                        throw new RuntimeException();
+                    String respString = HttpConnectionHandler.getInstance().getResponseString(resp);
+                    if (respString == null || respString.split(";").length != 3) {
+                        throw new IOException();
                     }
-                } catch (Exception e) {
+                    data = respString.split(";");
+                } catch (IOException e) {
+                    Toast.makeText(HomeActivity.this, "Address does not use correct configuration", Toast.LENGTH_LONG).show();
                     return;
                 }
-                Intent intent = new Intent(HomeActivity.this, UserVenueActivity.class);
-                intent.putExtra("editTextInput", data[0].trim());
-                intent.putExtra("motdText", data[2].trim());
-                startActivity(intent);
             } else {
-                Toast.makeText(HomeActivity.this, "Please enter an address", Toast.LENGTH_SHORT).show();
+                Toast.makeText(HomeActivity.this, "Address can not be empty", Toast.LENGTH_SHORT).show();
+                return;
             }
+            Intent intent = new Intent(HomeActivity.this, UserVenueActivity.class);
+            intent.putExtra("editTextInput", data[0].trim());
+            intent.putExtra("motdText", data[2].trim());
+            startActivity(intent);
         });
     }
 

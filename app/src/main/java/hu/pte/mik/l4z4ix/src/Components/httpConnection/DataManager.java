@@ -18,7 +18,6 @@ public class DataManager {
     private final Logger logger = Logger.getLogger("Datamanager");
     private final Storage storage = Storage.INSTANCE;
     private final HttpConnectionHandler httpConnectionHandler = HttpConnectionHandler.getInstance();
-    private static final String PROTOCOL = "http://";
     private String url = null;
     private static final DataManager INSTANCE = new DataManager();
 
@@ -30,15 +29,18 @@ public class DataManager {
     }
 
     public void setUrl(String url) {
-        this.url = url;
+        if (!url.matches("^[a-zA-Z][a-zA-Z0-9+.-]*://.*")) {
+            this.url = "http://" + url;
+        } else
+            this.url = url;
     }
 
-    public Response doHello(String Url) throws IOException {
-        return httpConnectionHandler.doRequest(PROTOCOL + Url + "/data/hello");
+    public Response doHello() throws IOException {
+        return httpConnectionHandler.doRequest(url + "/data/hello");
     }
 
     public void requestVenues() throws IOException {
-        Response r = httpConnectionHandler.doRequest(PROTOCOL + url + "/data/venues");
+        Response r = httpConnectionHandler.doRequest(url + "/data/venues");
         if (!r.isSuccessful()) {
             throw new IOException("Something went wrong. Try again later.");
         }
@@ -59,12 +61,12 @@ public class DataManager {
 
     public void requestVenueData(Long venueId) throws IOException {
         try {
-            Response r = httpConnectionHandler.doRequest(PROTOCOL + url + "/data/venuedata/" + venueId);
+            Response r = httpConnectionHandler.doRequest(url + "/data/venuedata/" + venueId);
             if (!r.isSuccessful()) {
                 throw new IOException();
             }
 
-            Response r2 = httpConnectionHandler.doRequest(PROTOCOL + url + "/data/connectionsByVenue?venueId=" + venueId);
+            Response r2 = httpConnectionHandler.doRequest(url + "/data/connectionsByVenue?venueId=" + venueId);
             if (!r2.isSuccessful()) {
                 throw new IOException();
             }
@@ -79,7 +81,7 @@ public class DataManager {
 
     public void requestConnectionsByVenue(Venue venue) throws IOException {
         try {
-            Response r = httpConnectionHandler.doRequest(PROTOCOL + url + "/data/connectionsByVenue?venueId=" + venue.getId());
+            Response r = httpConnectionHandler.doRequest(url + "/data/connectionsByVenue?venueId=" + venue.getId());
             if (!r.isSuccessful()) {
                 throw new IOException();
             }
@@ -94,13 +96,13 @@ public class DataManager {
 
     public String doLogin(Login credentials) throws IOException {
         try {
-            Response r1 = httpConnectionHandler.doRequest(PROTOCOL + url + "/data/hello");
+            Response r1 = httpConnectionHandler.doRequest(url + "/data/hello");
             if (!r1.isSuccessful()) {
                 throw new IOException("Invalid url");
             }
             String[] data = httpConnectionHandler.getResponseString(r1).split(";");
             Response response;
-            response = httpConnectionHandler.doRequest(PROTOCOL + url + "/login", credentials, RequestType.POST);
+            response = httpConnectionHandler.doRequest(url + "/login", credentials, RequestType.POST);
             if (!response.isSuccessful()) {
                 throw new IOException("Invalid credentials");
             }
@@ -156,7 +158,7 @@ public class DataManager {
     private String doHttpCall(String subUrl, Object DTO, String errorMessage, RequestType requestType) throws IOException {
         try {
             Response resp;
-            resp = httpConnectionHandler.doRequest(PROTOCOL + url + subUrl, DTO, requestType);
+            resp = httpConnectionHandler.doRequest(url + subUrl, DTO, requestType);
             if (!resp.isSuccessful()) {
                 throw new IOException("Response was not successful");
             }
