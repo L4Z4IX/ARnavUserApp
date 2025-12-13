@@ -7,11 +7,13 @@ import com.google.ar.sceneform.math.Vector3;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.logging.Logger;
 
 import hu.pte.mik.l4z4ix.src.Components.entityModel.Connection;
 import hu.pte.mik.l4z4ix.src.Components.entityModel.Point;
 
 public class Navigator {
+    private final Logger logger = Logger.getLogger("navigator");
     private final double REACHING_TRESHOLD = 2.0;
     private final List<Connection> connections;
     private final List<Point> points;
@@ -27,8 +29,11 @@ public class Navigator {
 
     public void startNavigation(Location CurrentLocation) {
         if (path == null || path.isEmpty()) {
+            logger.info("Starting navigation at " + CurrentLocation + " location");
             Point start = findClosestReachableNode(CurrentLocation);
+            logger.info("Found closest node named " + start);
             path = Dijkstra.solve(connections, points, start, target);
+            logger.info("Set path to " + path);
             currentStepIndex = 0;
         }
     }
@@ -56,10 +61,19 @@ public class Navigator {
 
     private Point findClosestReachableNode(Location current) {
         List<Point> sorted = new ArrayList<>(points);
-        sorted.sort(Comparator.comparingDouble(p -> current.distanceTo(pointToLocation(p))));
+        sorted.sort(Comparator.comparingDouble(p -> {
+                    double dist = current.distanceTo(pointToLocation(p));
+                    logger.info(p.getName() + "point is " + dist + " distance away");
+                    return dist;
+                }
+        ));
+        logger.info("Finding closest point to destination, sorted list is: " + sorted);
         for (Point candidate : sorted) {
+            logger.info("Trying candidate " + candidate.getName());
             List<Point> path = Dijkstra.solve(connections, points, candidate, target);
-            if (path != null && !path.isEmpty()) {
+            logger.info("Candidate gave path of " + path);
+            if (!path.isEmpty()) {
+                logger.info(candidate.getName() + " candidate gave valid path");
                 return candidate;
             }
         }
