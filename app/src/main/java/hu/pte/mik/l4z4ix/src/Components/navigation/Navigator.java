@@ -38,13 +38,16 @@ public class Navigator {
         }
     }
 
-    public Point getCurrentPlacementLocation(Vector3 objectPose, Vector3 cameraPose) {
+    Vector3 previousObjectPose = new Vector3();
 
-        if (Vector3.subtract(objectPose, cameraPose).length() < REACHING_TRESHOLD) {
-            if (currentStepIndex + 1 >= path.size()) {
+    public Point getCurrentPlacementLocation(Vector3 objectPose, Vector3 cameraPose) {
+        if (currentStepIndex >= path.size())
+            return null;
+        if (!previousObjectPose.equals(objectPose) && Vector3.subtract(objectPose, cameraPose).length() < REACHING_TRESHOLD) {
+            previousObjectPose = objectPose;
+            if (++currentStepIndex >= path.size()) {
                 return null;
             }
-            currentStepIndex++;
         }
         return path.get(currentStepIndex);
 
