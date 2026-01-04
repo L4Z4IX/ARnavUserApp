@@ -282,7 +282,7 @@ public class ArActivity extends AppCompatActivity {
         float dx = (float) (distance * Math.sin(worldRotation));
         float dy = 0;
         //for multi-level implementation, use:
-        // (float) (currentLocation.getAltitude() - placementLocation.getAltitude());
+        // (float) (placementLocation.getAltitude()-currentLocation.getAltitude() );
         float dz = (float) (-distance * Math.cos(worldRotation));
 
         try {
