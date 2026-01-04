@@ -176,6 +176,7 @@ public class ArActivity extends AppCompatActivity {
             public void run() {
                 if (currentLocation != null && currentLocation.getAccuracy() < 3) {
                     GPSState.setVisibility(View.GONE);
+                    buildRenderable();
                     if (!getIntent().getStringExtra("type").equals("admin")) {
                         startNavigation();
                     }
@@ -190,6 +191,19 @@ public class ArActivity extends AppCompatActivity {
             }
         }, 100);
 
+    }
+
+    private void buildRenderable() {
+        for (int i = 0; i < renderable.getSubmeshCount(); i++) {
+            Material originalMaterial = renderable.getMaterial(i);
+            // Create a mutable copy to avoid modifying the original shared material
+            Material debugMaterial = originalMaterial.makeCopy();
+            // Disable depth testing (reading)
+            debugMaterial.setBoolean("depthRead", false);
+            // Disable depth writing
+            debugMaterial.setBoolean("depthWrite", false);
+            renderable.setMaterial(i, debugMaterial);
+        }
     }
 
     private void startNavigation() {
@@ -278,16 +292,6 @@ public class ArActivity extends AppCompatActivity {
             Anchor anchor = arFragment.getArSceneView().getSession().createAnchor(targetPose);
             if (currentAnchorNode != null) {
                 currentAnchorNode.getAnchor().detach();
-            }
-            for (int i = 0; i < renderable.getSubmeshCount(); i++) {
-                Material originalMaterial = renderable.getMaterial(i);
-                // Create a mutable copy to avoid modifying the original shared material
-                Material debugMaterial = originalMaterial.makeCopy();
-                // Disable depth testing (reading)
-                debugMaterial.setBoolean("depthRead", false);
-                // Disable depth writing
-                debugMaterial.setBoolean("depthWrite", false);
-                renderable.setMaterial(i, debugMaterial);
             }
             currentAnchorNode = new AnchorNode(anchor);
             currentAnchorNode.setParent(arFragment.getArSceneView().getScene());
