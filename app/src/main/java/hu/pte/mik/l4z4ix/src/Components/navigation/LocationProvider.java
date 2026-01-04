@@ -81,10 +81,12 @@ public class LocationProvider {
     }
 
     private Location moveLocation(Location start, double distanceMeters, double bearingDegrees) {
-        double R = 6371000; // Earth radius in meters
+        double EqR = 6378137.0;           // WGS-84 semi-major axis
+        double e2 = 6.69437999014e-3;   // WGS-84 eccentricity squared
         double angleRad = bearingDegrees * Math.PI / 180;
         double latRad = start.getLatitude() * Math.PI / 180;
         double lngRad = start.getLongitude() * Math.PI / 180;
+        double R = EqR / Math.sqrt(1 - e2 * Math.sin(latRad) * Math.sin(latRad));
 
         double destLat = Math.asin(Math.sin(latRad) * Math.cos(distanceMeters / R) +
                 Math.cos(latRad) * Math.sin(distanceMeters / R) * Math.cos(angleRad));
